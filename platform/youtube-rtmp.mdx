@@ -1,3 +1,56 @@
 ---
-title: "youtube-rtmp"
+title: "YouTube via RTMP stream key"
+sidebarTitle: "YouTube (RTMP key)"
+description: "Stream a pre-recorded video to YouTube 24/7 using a stream key from YouTube's live control room — manual setup, no account connection."
+keywords:
+  ["youtube stream key", "youtube rtmp 24/7", "stream pre-recorded video to youtube", "youtube live stream key"]
 ---
+
+This page covers streaming to YouTube with a **stream key** you copy from YouTube yourself. If
+you'd rather connect your channel and let Streamloop manage the broadcast, use the
+[managed connection](/platform/youtube) instead.
+
+Use a stream key when you want to create and control the broadcast in **YouTube Studio** — for
+example, on a channel you can't connect with Google sign-in.
+
+## Get your stream key from YouTube
+
+<Steps>
+  <Step title="Open YouTube Live">
+    In YouTube Studio, click **Create → Go live** to open the live control room.
+  </Step>
+  <Step title="Copy the stream key">
+    On the **Stream** tab, copy the **Stream key** (it looks like `live_xxxx_xxxxxxxxxxxxxxx`). The
+    ingest URL is `rtmp://a.rtmp.youtube.com/live2`.
+  </Step>
+</Steps>
+
+## Add it to Streamloop
+
+<Steps>
+  <Step title="Open the destination picker">
+    In your loop's **General** tab, click **Connect a destination**.
+  </Step>
+  <Step title="Choose YouTube (RTMP stream key)">
+    Pick **YouTube · RTMP stream key**. Give it a **Display name**, leave the **RTMP URL** as the
+    pre-filled `rtmp://a.rtmp.youtube.com/live2`, paste your **Stream key**, and click
+    **Save destination**.
+  </Step>
+</Steps>
+
+<Tip>
+  Shortcut: paste the stream key straight into the destination search box. Streamloop detects the
+  YouTube format and connects it for you — you'll see **"Connecting YouTube key…"** while it links.
+</Tip>
+
+## What you manage where
+
+With a stream key, **you** own the broadcast settings. Set the title, description, privacy, and
+thumbnail in **YouTube Studio** — Streamloop only sends the video to the key you provided. For
+title, privacy, thumbnail, and schedule control inside Streamloop, switch to the
+[managed connection](/platform/youtube).
+
+<Note>
+  Ready to go live? Add your key on [streamloop.app](https://streamloop.app), or follow the
+  [quickstart](/quickstart).
+</Note>

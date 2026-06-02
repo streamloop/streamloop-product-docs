@@ -31,37 +31,47 @@
     "directory": "card",
     "groups": [
       {
-        "group": "Platform",
-        "icon": "layers",
+        "group": "Getting started",
+        "icon": "rocket",
         "expanded": true,
         "pages": [
           "quickstart",
-          "concepts",
           "features",
+          "billing",
           "settings"
         ]
       },
       {
-        "group": "Setting up your 24/7 stream",
+        "group": "Your first stream",
         "icon": "video",
         "expanded": true,
         "pages": [
+          "upload-your-video-and-audio-playlist",
+          "build-and-schedule-your-playlist",
           "set-up-your-destination",
-          {
-            "group": "Destinations",
-            "expanded": true,
-            "pages": [
-              "platform/facebook-live",
-              "platform/instagram",
-              "platform/youtube",
-              "platform/youtube-rtmp",
-              "platform/kick",
-              "platform/tiktok",
-              "platform/twitch"
-            ]
-          },
-          "get-your-stream-live",
-          "upload-your-video-and-audio-playlist"
+          "get-your-stream-live"
+        ]
+      },
+      {
+        "group": "Guides",
+        "icon": "lightbulb",
+        "expanded": true,
+        "pages": [
+          "lofi-music-channel"
+        ]
+      },
+      {
+        "group": "Destinations",
+        "icon": "radio",
+        "expanded": true,
+        "pages": [
+          "platform/youtube",
+          "platform/youtube-rtmp",
+          "platform/twitch",
+          "platform/facebook-live",
+          "platform/kick",
+          "platform/tiktok",
+          "platform/instagram"
         ]
       },
       {
@@ -75,8 +85,10 @@
       },
       {
         "group": "Resources",
+        "icon": "book-open",
         "pages": [
           "reliability-guarantees",
+          "accepted-file-formats",
           "terms-of-service",
           "privacy-policy"
         ]

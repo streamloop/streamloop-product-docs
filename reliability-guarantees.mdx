@@ -1,3 +1,64 @@
 ---
-title: "Reliability guarantees"
+title: "Reliability"
+sidebarTitle: "Reliability"
+description: "How Streamloop keeps your 24/7 stream live — cloud hosting, continuous health monitoring with automatic restart, distributed failover, and encrypted credentials."
+keywords:
+  ["24/7 stream reliability", "live stream uptime", "stream auto restart", "always on live stream"]
+icon: "shield-check"
 ---
+
+A 24/7 stream is only useful if it stays up while you're asleep, at work, or away from your
+computer. Streamloop runs your stream in the cloud and watches it continuously, bringing it back
+on its own if anything goes wrong.
+
+## Always on, in the cloud
+
+Your stream runs on Streamloop's servers, not on your machine. There's no OBS to keep open and no
+PC to leave switched on — once a loop is live, you can close your laptop and it keeps streaming.
+
+## Monitoring and automatic recovery
+
+Streamloop checks the health of every live stream around the clock. If a stream stalls, drops, or
+a destination briefly refuses the connection, Streamloop restarts it and reconnects automatically
+— usually before viewers notice.
+
+Streams run on distributed infrastructure with standby capacity, so a single failure on our side
+doesn't take you off air. In practice, Streamloop maintains **over 99.9% uptime**.
+
+<Note>
+  We don't claim a perfect 100%. Platforms like YouTube and Twitch occasionally enforce their own
+  limits or maintenance windows. When that happens, Streamloop keeps trying and brings your stream
+  back as soon as the destination accepts it again.
+</Note>
+
+## Your credentials are encrypted
+
+Connecting a destination means trusting us with sensitive keys, so we protect them:
+
+- Your **YouTube authorization** and **RTMP stream keys** are **encrypted at rest**.
+- They're kept in **isolated storage**, separate from the rest of your account data.
+- They're used only to publish your stream to the destination you picked — never shared.
+
+See [YouTube integration](/you-tube-integration) for how the YouTube connection works.
+
+## If something looks off
+
+<Steps>
+  <Step title="Check your destination">
+    Open YouTube, Twitch, or your RTMP platform and confirm it shows an incoming stream. A
+    destination-side issue (a disabled channel, a changed key) can stop the broadcast even when
+    Streamloop is healthy.
+  </Step>
+  <Step title="Check your credit balance">
+    A stream stops if your credits run out. Top up and start it again — see [Billing](/billing).
+  </Step>
+  <Step title="Reconnect an expired YouTube channel">
+    If your YouTube connection has expired, reconnect it from the destination settings, then
+    restart the stream.
+  </Step>
+</Steps>
+
+<Note>
+  Building an always-on channel? Start on [streamloop.app](https://streamloop.app), or follow the
+  [quickstart](/quickstart).
+</Note>

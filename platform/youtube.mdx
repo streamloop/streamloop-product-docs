@@ -1,3 +1,79 @@
 ---
-title: "youtube"
+title: "YouTube (managed connection)"
+sidebarTitle: "YouTube (managed)"
+description: "Connect your YouTube channel to Streamloop through Google sign-in and let Streamloop create and manage the live broadcast — title, privacy, thumbnail, and schedule."
+keywords:
+  ["stream pre-recorded video to youtube 24/7", "youtube live api", "connect youtube channel", "managed youtube live stream"]
 ---
+
+There are two ways to stream to YouTube with Streamloop. This page covers the **managed
+connection**, where you link your channel once and Streamloop runs the whole broadcast for you.
+If you'd rather paste a stream key from YouTube yourself, see
+[YouTube via RTMP stream key](/platform/youtube-rtmp).
+
+## Why use the managed connection
+
+With a managed connection, Streamloop talks to YouTube through the official YouTube API, so it can:
+
+- **Create and run the broadcast** for you — no copying stream keys.
+- Let you set the **title, description, privacy, thumbnail, and schedule** from inside Streamloop.
+- Keep the YouTube broadcast in sync if you reschedule or stop the loop.
+
+## Connect your channel
+
+<Steps>
+  <Step title="Open the destination picker">
+    In your loop's **General** tab, find the destination section and click **Connect a destination**.
+  </Step>
+  <Step title="Choose YouTube (Connect channel)">
+    In the provider grid, pick **YouTube · Connect channel** (marked **recommended**). This starts
+    Google sign-in.
+  </Step>
+  <Step title="Sign in and grant access">
+    Complete the Google popup. On the consent screen, **leave every box checked** — including the
+    YouTube permission.
+    <Warning>
+      Google shows the YouTube permission as an optional checkbox. If you untick it, sign-in still
+      succeeds but Streamloop gets no access to your channel and the connection silently fails.
+      Keep all boxes checked.
+    </Warning>
+  </Step>
+  <Step title="Confirm it's connected">
+    Your channel appears with a **Connected** badge. Pick it as the loop's destination and you're
+    ready to set up the broadcast.
+  </Step>
+</Steps>
+
+## Set up the broadcast
+
+Once a YouTube channel is connected, the loop's **YouTube** tab unlocks. From there you control
+how the broadcast appears on your channel:
+
+- **Title, description, category, language, and tags.**
+- **Visibility** — Public, Unlisted, or Private.
+- **Thumbnail** — automatic (the first frame of your video) or a custom image.
+- **Recording and DVR**, plus a **latency** mode (normal, low, or ultra-low).
+- **Publish upcoming broadcast on YouTube when scheduled** — when on, scheduling the loop also
+  creates the upcoming broadcast on your channel and keeps it in sync.
+
+See [YouTube broadcast controls](/features#youtube-broadcast-controls) for the full list.
+
+## Reconnect when access expires
+
+If Google's authorization expires, the destination shows **YouTube needs reauthorization**. Click
+**Reconnect** and complete sign-in again to keep streaming. Your stream keys and authorization are
+[encrypted at rest](/reliability-guarantees#your-credentials-are-encrypted).
+
+## Managed connection vs stream key
+
+| | Managed connection | [Stream key](/platform/youtube-rtmp) |
+| --- | --- | --- |
+| Setup | Sign in with Google once | Paste a key from YouTube |
+| Broadcast created by | Streamloop | You, in YouTube Studio |
+| Title / privacy / thumbnail | Set in Streamloop | Set in YouTube Studio |
+| Schedule synced to YouTube | Yes | No |
+
+<Note>
+  Ready to go live? Connect your channel on [streamloop.app](https://streamloop.app), or follow the
+  [quickstart](/quickstart).
+</Note>

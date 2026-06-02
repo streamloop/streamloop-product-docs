@@ -1,3 +1,154 @@
 ---
-title: "List of features"
+title: "Features"
+description: "Loop pre-recorded videos and audio as a 24/7 live stream to YouTube, Twitch, Facebook Live, or any RTMP platform — up to 4K 60fps, pay-as-you-go."
+keywords:
+  ["streamloop features", "24/7 live stream", "loop video to youtube", "pre-recorded live stream", "rtmp streaming", "stream a playlist 24/7"]
+icon: "list"
 ---
+
+Streamloop turns pre-recorded videos and audio into a continuous live stream that runs 24/7 on
+YouTube or any RTMP platform. Build a loop from a single video or a whole playlist, point it at a
+destination, and a cloud worker keeps it live indefinitely. Everything runs in the cloud —
+there's no OBS to set up, no encoding hardware, and no PC left switched on.
+
+This page covers what Streamloop can do. To put it to work, start with the [quickstart](/quickstart).
+
+## What you can do
+
+<Columns cols={2}>
+  <Card title="Go live to YouTube" icon="youtube" href="/platform/youtube">
+    Connect your channel or paste a stream key, then loop your video to YouTube around the clock.
+  </Card>
+  <Card title="Stream to any RTMP platform" icon="radio" href="/set-up-your-destination">
+    Twitch, Facebook Live, Instagram, Kick, TikTok, or anything that accepts an RTMP feed.
+  </Card>
+  <Card title="Loop a playlist" icon="list-video" href="/upload-your-video-and-audio-playlist">
+    Queue several videos in one loop, reorder them, and play them in order or on shuffle.
+  </Card>
+  <Card title="Schedule and walk away" icon="calendar-clock" href="/get-your-stream-live">
+    Set a start time and let it stop on its own. Streamloop runs the stream for you.
+  </Card>
+</Columns>
+
+## Stream destinations
+
+Each loop streams to one destination:
+
+- **YouTube** — connect your channel directly through the official YouTube API. Streamloop is
+  reviewed and audited by YouTube to meet its
+  [live-streaming verification requirements](https://support.google.com/youtube/answer/6259859),
+  and it creates and manages the live broadcast for you. You can also paste a stream key from
+  YouTube's live control room instead. See [YouTube integration](/you-tube-integration).
+- **Custom RTMP** — point a loop at any RTMP URL and stream key. This covers **Twitch**,
+  **Facebook Live**, **Instagram**, **Kick**, **TikTok**, and any other RTMP-compatible
+  platform. See [Destinations](/set-up-your-destination).
+
+## Video quality
+
+Pick the resolution and frame rate that fit your content and your budget:
+
+- **Resolution** — 720p, 1080p, 1440p, or 4K (2160p).
+- **Frame rate** — 24, 25, 30, or 60fps.
+- **Orientation** — landscape (horizontal) or portrait (vertical), so the same loop works for a
+  TV-style channel or a vertical feed like Shorts, TikTok, or Reels.
+
+Higher resolution and frame rate cost more per hour — see [Pricing](#pricing).
+
+## Playlists
+
+Loop more than one video:
+
+- **Queue multiple videos** in a single loop and **drag to reorder** them.
+- **Choose how it loops** — *In order* (play 1 → 2 → 3, then repeat) or *Shuffle* (random
+  order, with no repeats until every video has played).
+- **Edit while you're live** — add, remove, or reorder videos on a running stream, then publish
+  the change. The on-air playlist updates almost instantly, with no stop-and-restart.
+
+See [Upload your video and audio](/upload-your-video-and-audio-playlist).
+
+## Your video and audio
+
+- **Almost any format** — upload common containers (MP4, MOV, MKV) and modern codecs (AV1,
+  H.265/HEVC, H.264) for video, and MP3, WAV, FLAC, AAC, or Opus for audio. Files can be up to
+  10 GB each. Drag and drop, or use the upload button.
+- **Import from a link** — skip the download-then-upload dance and pull media straight from
+  **Google Drive**, **Dropbox**, a **YouTube link**, or any **direct download URL**. Streamloop
+  fetches it on its servers and shows live progress, so you can close the tab while it works.
+- **Separate audio track** — manage audio independently from video, as a single track or a full
+  audio playlist, to replace the original sound with background music or a voiceover. Handy for
+  lofi, radio, and ambient channels.
+
+## Scheduling
+
+- **Schedule a start** — set a future date and time, and the stream goes live on its own.
+- **Stop automatically** — give a loop a run length or a specific end time, or let it run
+  indefinitely.
+- **Start on upload** — begin streaming automatically as soon as your upload finishes.
+
+## Reliability and security
+
+- **Always-on uptime** — Streamloop runs on distributed cloud infrastructure and maintains
+  **over 99.9% uptime**. It watches every stream around the clock and restarts automatically if
+  one gets stuck or drops, so your channel stays live without you watching over it.
+- **Encrypted credentials** — your YouTube authorization and RTMP stream keys are encrypted at
+  rest and kept in isolated storage, separate from the rest of your account data.
+
+See [Reliability](/reliability-guarantees).
+
+## YouTube broadcast controls
+
+When you connect a YouTube channel, Streamloop sets up and runs the broadcast for you — no
+YouTube Studio required:
+
+- Set the stream **title, description, category, language, and tags**.
+- Choose **visibility**: Public, Unlisted, or Private.
+- Pick a **thumbnail** — automatic (the first frame of your video) or a custom image.
+- Toggle **recording** and **DVR**, and choose a **latency** mode (normal, low, or ultra-low).
+- **Schedule on YouTube** — when you schedule a loop, Streamloop creates the upcoming YouTube
+  broadcast and keeps it in sync if you reschedule or cancel.
+
+See [YouTube integration](/you-tube-integration) for the full setup.
+
+## Pricing
+
+Streamloop is **pay-as-you-go** — you buy credits and spend them only while a stream is live.
+There's **no subscription** and **no commitment**, and **credits never expire**.
+
+Cost scales with resolution, frame rate, and how long the stream runs:
+
+| Resolution   | Approximate cost      |
+| ------------ | --------------------- |
+| 720p         | from **$4 / month**   |
+| 1080p        | from **$8 / month**   |
+| 1440p        | from **$16 / month**  |
+| 4K (2160p)   | from **$24 / month**  |
+
+<Note>
+  Prices are approximate, for a continuous stream at 24fps. Higher frame rates cost more. See the
+  [pricing page](https://streamloop.app/#pricing) for current rates.
+</Note>
+
+- **Free to try** — new accounts get free credits, enough for a few hours of streaming, with no
+  card required.
+- **Top up from $5** — and any unused balance stays on your account.
+- **Card or crypto** — pay by card (via Stripe) or with cryptocurrency, including USDT, USDC,
+  Bitcoin, Ethereum, and Solana, across all major coins and networks.
+
+For the full breakdown — metering, refunds, and what happens if you run low — see
+[How billing works](/billing).
+
+## Integrations
+
+<Columns cols={2}>
+  <Card title="YouTube" icon="youtube" href="/you-tube-integration">
+    Connect your YouTube channel so Streamloop creates and manages the live broadcast for you.
+  </Card>
+  <Card title="AI agents (MCP)" icon="bot" href="/mcp-agent">
+    Create and control streams from MCP-compatible AI tools through Streamloop's MCP server.
+  </Card>
+</Columns>
+
+<Note>
+  Ready to go live? [Start streaming on streamloop.app](https://streamloop.app) — or follow the
+  [quickstart](/quickstart) to set up your first 24/7 stream.
+</Note>

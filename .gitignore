@@ -1,1 +1,5 @@
 .DS_Store
+
+# Draft content (also mint-ignored)
+drafts/
+*.draft.mdx
