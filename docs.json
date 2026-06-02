@@ -75,15 +75,6 @@
         ]
       },
       {
-        "group": "Integrations",
-        "icon": "plug",
-        "expanded": true,
-        "pages": [
-          "you-tube-integration",
-          "mcp-agent"
-        ]
-      },
-      {
         "group": "Resources",
         "icon": "book-open",
         "pages": [
