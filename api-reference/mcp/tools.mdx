@@ -1,0 +1,76 @@
+---
+title: "MCP tools"
+description: "The 31 Streamloop MCP tools, grouped by domain — what each does and the scope it needs."
+icon: "wrench"
+keywords: ["mcp tools", "streamloop tools", "agent tools", "tool catalog"]
+---
+
+The MCP server exposes **31 tools** across seven domains. They mirror the [REST API](/api-reference/introduction), so anything an agent can do here maps to a REST endpoint and vice versa. Names are `snake_case` and prefixed `streamloop_`.
+
+Tools marked **Destructive** require explicit confirmation (`confirm: true`) before they run. See [Permissions](/api-reference/mcp/overview#permissions) for what each scope grants.
+
+## Account
+
+| Tool | Description | Scope |
+| --- | --- | --- |
+| `streamloop_get_me` | Get the authenticated user's account | `read` |
+
+## Streams
+
+| Tool | Description | Scope |
+| --- | --- | --- |
+| `streamloop_list_streams` | List your streams | `read` |
+| `streamloop_get_stream` | Get one stream | `read` |
+| `streamloop_create_stream` | Create a 24/7 loop stream | `write` |
+| `streamloop_update_stream` | Update a stream (includes YouTube broadcast settings) | `write` |
+| `streamloop_start_stream` | Start a stream | `write` |
+| `streamloop_stop_stream` | Stop a stream | `write` |
+| `streamloop_schedule_stream` | Schedule a stream to start/stop automatically | `write` |
+| `streamloop_cancel_stream_schedule` | Cancel a scheduled start/stop | `write` |
+| `streamloop_check_stream_readiness` | Check whether a stream can go live | `read` |
+| `streamloop_get_stream_live_stats` | Read live stats for a running stream | `read` |
+| `streamloop_delete_stream` | Delete a stream · **Destructive** | `destructive` |
+
+## Uploads
+
+| Tool | Description | Scope |
+| --- | --- | --- |
+| `streamloop_list_uploads` | List uploaded media | `read` |
+| `streamloop_get_upload` | Get one upload | `read` |
+| `streamloop_create_upload_from_link` | Import media from a URL | `write` |
+| `streamloop_create_upload_from_file_upload` | Start a direct file upload | `write` |
+| `streamloop_complete_upload` | Finalize a direct upload | `write` |
+| `streamloop_delete_upload` | Delete an upload · **Destructive** | `destructive` |
+
+## Playlists
+
+| Tool | Description | Scope |
+| --- | --- | --- |
+| `streamloop_list_playlists` | List playlists | `read` |
+| `streamloop_get_playlist` | Get one playlist | `read` |
+| `streamloop_apply_playlist_operations` | Add, remove, and reorder playlist items | `write` |
+| `streamloop_copy_playlist` | Duplicate a playlist | `write` |
+| `streamloop_publish_playlist` | Publish playlist changes to a live stream | `write` |
+
+## Destinations
+
+| Tool | Description | Scope |
+| --- | --- | --- |
+| `streamloop_list_destinations` | List streaming destinations | `read` |
+| `streamloop_create_rtmp_destination` | Add a custom RTMP destination | `write` |
+
+## Billing
+
+| Tool | Description | Scope |
+| --- | --- | --- |
+| `streamloop_get_billing_overview` | Read credit balance and billing status | `billing` |
+| `streamloop_get_usage` | Read usage analytics | `billing` |
+| `streamloop_list_invoices` | List invoices | `billing` |
+| `streamloop_top_up_using_card_link` | Create a card top-up link · **Destructive** | `billing` |
+
+## Crypto
+
+| Tool | Description | Scope |
+| --- | --- | --- |
+| `streamloop_list_crypto_currencies` | List supported top-up cryptocurrencies | `billing` |
+| `streamloop_get_crypto_deposit_address` | Get a crypto deposit address for a top-up | `billing` |

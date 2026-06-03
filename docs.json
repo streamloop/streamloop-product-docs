@@ -18,6 +18,15 @@
   "contextual": {
     "options": ["copy", "view", "assistant", "mcp", "add-mcp"]
   },
+  "api": {
+    "openapi": "https://api.streamloop.app/v1/openapi.json",
+    "playground": {
+      "display": "interactive"
+    },
+    "examples": {
+      "languages": ["bash", "python", "javascript"]
+    }
+  },
   "navigation": {
     "global": {
       "anchors": [
@@ -28,60 +37,103 @@
         }
       ]
     },
-    "directory": "card",
-    "groups": [
+    "tabs": [
       {
-        "group": "Getting started",
-        "icon": "rocket",
-        "expanded": true,
-        "pages": [
-          "quickstart",
-          "features",
-          "billing",
-          "settings"
-        ]
-      },
-      {
-        "group": "Your first stream",
-        "icon": "video",
-        "expanded": true,
-        "pages": [
-          "upload-your-video-and-audio-playlist",
-          "build-and-schedule-your-playlist",
-          "set-up-your-destination",
-          "get-your-stream-live"
-        ]
-      },
-      {
-        "group": "Guides",
-        "icon": "lightbulb",
-        "expanded": true,
-        "pages": [
-          "lofi-music-channel"
-        ]
-      },
-      {
-        "group": "Destinations",
-        "icon": "radio",
-        "expanded": true,
-        "pages": [
-          "platform/youtube",
-          "platform/youtube-rtmp",
-          "platform/twitch",
-          "platform/facebook-live",
-          "platform/kick",
-          "platform/tiktok",
-          "platform/instagram"
-        ]
-      },
-      {
-        "group": "Resources",
+        "tab": "Guides",
         "icon": "book-open",
-        "pages": [
-          "reliability-guarantees",
-          "accepted-file-formats",
-          "terms-of-service",
-          "privacy-policy"
+        "groups": [
+          {
+            "group": "Getting started",
+            "icon": "rocket",
+            "expanded": true,
+            "pages": [
+              "quickstart",
+              "features",
+              "billing",
+              "settings"
+            ]
+          },
+          {
+            "group": "Your first stream",
+            "icon": "video",
+            "expanded": true,
+            "pages": [
+              "upload-your-video-and-audio-playlist",
+              "build-and-schedule-your-playlist",
+              "set-up-your-destination",
+              "get-your-stream-live"
+            ]
+          },
+          {
+            "group": "Guides",
+            "icon": "lightbulb",
+            "expanded": true,
+            "pages": [
+              "lofi-music-channel"
+            ]
+          },
+          {
+            "group": "Destinations",
+            "icon": "radio",
+            "expanded": true,
+            "pages": [
+              "platform/youtube",
+              "platform/youtube-rtmp",
+              "platform/twitch",
+              "platform/facebook-live",
+              "platform/kick",
+              "platform/tiktok",
+              "platform/instagram"
+            ]
+          },
+          {
+            "group": "Resources",
+            "icon": "book-open",
+            "pages": [
+              "reliability-guarantees",
+              "accepted-file-formats",
+              "terms-of-service",
+              "privacy-policy"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "icon": "terminal",
+        "groups": [
+          {
+            "group": "Get started",
+            "icon": "rocket",
+            "expanded": true,
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/authentication",
+              "api-reference/conventions",
+              "api-reference/quickstart"
+            ]
+          },
+          {
+            "group": "REST API",
+            "icon": "code",
+            "openapi": "https://api.streamloop.app/v1/openapi.json"
+          },
+          {
+            "group": "MCP server",
+            "icon": "bot",
+            "expanded": true,
+            "pages": [
+              "api-reference/mcp/overview",
+              "api-reference/mcp/tools"
+            ]
+          },
+          {
+            "group": "GraphQL API",
+            "icon": "braces",
+            "pages": [
+              "api-reference/graphql"
+            ]
+          }
         ]
       }
     ]

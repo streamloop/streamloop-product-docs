@@ -1,0 +1,124 @@
+---
+title: "Quickstart"
+description: "Go from an API key to a live 24/7 stream with a handful of curl calls."
+icon: "rocket"
+keywords: ["streamloop api quickstart", "create stream api", "start stream curl", "rtmp api example"]
+---
+
+This walkthrough takes you from nothing to a running stream using `curl` and an [API key](/api-reference/authentication). The flow is: add some media, point it at a destination, create the stream, and start it.
+
+Set your key once so the snippets below stay short:
+
+```bash
+export SL_KEY="sl_your_key_here"
+```
+
+<Steps>
+  <Step title="Verify your credentials">
+    Confirm the key works and see your account:
+
+    ```bash
+    curl https://api.streamloop.app/v1/me \
+      -H "x-api-key: $SL_KEY"
+    ```
+
+    Returns your `User` (`id`, `email`, `firstName`, …). A `401` means the key is missing, wrong, or revoked.
+  </Step>
+
+  <Step title="Add a video">
+    Import a video from a public URL (you can also upload files directly — see the [Uploads](/api-reference/introduction) endpoints). `type` is `VIDEO` or `AUDIO`:
+
+    ```bash
+    curl -X POST https://api.streamloop.app/v1/uploads/from-link \
+      -H "x-api-key: $SL_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{ "type": "VIDEO", "url": "https://example.com/my-video.mp4" }'
+    ```
+
+    Note the `objectID` from the returned `Upload` — you'll reference it when creating the stream.
+  </Step>
+
+  <Step title="Add a destination">
+    Point at any RTMP target. Grab the ingest URL and stream key from your platform's dashboard (YouTube, Twitch, Facebook Live, or custom RTMP):
+
+    ```bash
+    curl -X POST https://api.streamloop.app/v1/destinations \
+      -H "x-api-key: $SL_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "My channel",
+        "rtmpUrl": "rtmp://a.rtmp.youtube.com/live2",
+        "rtmpKey": "xxxx-xxxx-xxxx-xxxx"
+      }'
+    ```
+
+    Note the destination `id` from the response.
+  </Step>
+
+  <Step title="Create the stream">
+    Combine the media and destination into a stream. `quality` is one of `q_720p`, `q_1080p`, `q_1440p`, `q_2160p`; `framerate` is `f_24`, `f_25`, `f_30`, or `f_60`:
+
+    ```bash
+    curl -X POST https://api.streamloop.app/v1/streams \
+      -H "x-api-key: $SL_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Lofi radio",
+        "quality": "q_1080p",
+        "framerate": "f_30",
+        "destinationID": "dest_…",
+        "videoUploadObjectID": "obj_…"
+      }'
+    ```
+
+    Note the stream `id`. (To loop several clips instead of one video, create a [playlist](/api-reference/introduction) and pass `playlistIDs` instead of `videoUploadObjectID`.)
+  </Step>
+
+  <Step title="Check it's ready to go live">
+    Readiness surfaces anything that would stop the stream from starting:
+
+    ```bash
+    curl https://api.streamloop.app/v1/streams/{id}/readiness \
+      -H "x-api-key: $SL_KEY"
+    ```
+
+    ```json
+    { "ready": true, "issues": [] }
+    ```
+
+    If `ready` is `false`, fix the listed `issues` (for example, the video is still being prepared) and check again.
+  </Step>
+
+  <Step title="Start streaming">
+    ```bash
+    curl -X POST https://api.streamloop.app/v1/streams/{id}/start \
+      -H "x-api-key: $SL_KEY"
+    ```
+
+    Your video now loops to the destination 24/7. Stop it any time with `POST /streams/{id}/stop`.
+  </Step>
+
+  <Step title="Monitor it">
+    Poll live stats while it runs:
+
+    ```bash
+    curl https://api.streamloop.app/v1/streams/{id}/live-stats \
+      -H "x-api-key: $SL_KEY"
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Prefer not to call low-level endpoints in order? Point an AI agent at the [MCP server](/api-reference/mcp/overview) and describe the outcome you want — it drives the same operations as tools.
+</Tip>
+
+## What's next
+
+<Columns cols={2}>
+  <Card title="Full endpoint reference" icon="code" href="/api-reference/introduction">
+    Every operation across streams, uploads, playlists, destinations, billing, and crypto.
+  </Card>
+  <Card title="Schedule instead of start" icon="calendar">
+    Pass `scheduleStartAt`/`scheduleEndAt` when creating a stream, or call `POST /streams/{id}/schedule`, to go live automatically.
+  </Card>
+</Columns>

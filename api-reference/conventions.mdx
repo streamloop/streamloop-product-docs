@@ -1,0 +1,96 @@
+---
+title: "Conventions"
+description: "Versioning, request and response formats, cursor pagination, and the RFC 7807 error model used across every Streamloop endpoint."
+icon: "ruler"
+keywords: ["api versioning", "cursor pagination", "rfc 7807", "problem details", "api errors", "rest conventions"]
+---
+
+These rules hold across every REST endpoint, so once you've learned them you can read the rest of the reference quickly.
+
+## Base URL and versioning
+
+All REST requests go to a versioned base path:
+
+```
+https://api.streamloop.app/v1
+```
+
+The version (`v1`) is in the path. We add fields and endpoints without bumping the version; a breaking change would ship under a new version path so your integration keeps working.
+
+## Requests and responses
+
+Requests and responses are JSON (`Content-Type: application/json`). Send a JSON body on `POST`, `PATCH`, and `PUT`; send query parameters on `GET`.
+
+A single-resource response returns that resource directly:
+
+```json
+{
+  "id": "stream_01J…",
+  "name": "Lofi radio",
+  "status": "live",
+  "quality": "1080p",
+  "framerate": 30
+}
+```
+
+## Pagination
+
+List endpoints are **cursor-paginated**. Pass `limit` to set the page size and `cursor` to fetch the next page:
+
+```bash
+curl "https://api.streamloop.app/v1/streams?limit=20" \
+  -H "x-api-key: sl_your_key_here"
+```
+
+The response wraps the items in `data` and returns paging metadata in `page`:
+
+```json
+{
+  "data": [
+    { "id": "stream_01J…", "name": "Lofi radio", "status": "live" }
+  ],
+  "page": {
+    "hasMore": true,
+    "nextCursor": "eyJpZCI6…"
+  }
+}
+```
+
+To get the next page, send the `nextCursor` value back as the `cursor` parameter. When `hasMore` is `false`, `nextCursor` is `null` and you've reached the end.
+
+```bash
+curl "https://api.streamloop.app/v1/streams?limit=20&cursor=eyJpZCI6…" \
+  -H "x-api-key: sl_your_key_here"
+```
+
+## Errors
+
+Successful requests return `2xx`. Errors return the matching HTTP status and an [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) problem document (`Content-Type: application/problem+json`):
+
+```json
+{
+  "type": "https://streamloop.app/errors/stream-not-found",
+  "title": "Stream not found",
+  "status": 404,
+  "detail": "No stream with id stream_01J… exists for this account.",
+  "code": "stream_not_found"
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `type` | URI reference identifying the problem type |
+| `title` | Short, human-readable summary of the problem |
+| `status` | The HTTP status code |
+| `detail` | Explanation specific to this occurrence |
+| `code` | Stable, machine-readable error code — branch on this |
+
+Branch your error handling on the `code` field (stable) rather than the human-readable `title` or `detail`.
+
+<Tip>
+  Treat `429` (too many requests) and `5xx` responses as retryable: back off and retry with jitter. Treat `4xx` responses other than `429` as permanent — fix the request rather than retrying it.
+</Tip>
+
+## Service status
+
+`GET /v1/status` is an unauthenticated health check, and `GET /v1/openapi.json` returns the full OpenAPI document that powers this reference.

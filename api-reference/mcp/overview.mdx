@@ -1,0 +1,53 @@
+---
+title: "MCP server"
+sidebarTitle: "Overview"
+description: "Let AI agents like Claude and ChatGPT run Streamloop as tools — create, control, and monitor streams over the Model Context Protocol."
+icon: "bot"
+keywords: ["streamloop mcp", "model context protocol", "mcp server", "ai agent streaming", "claude mcp", "chatgpt mcp"]
+---
+
+Streamloop runs a hosted **Model Context Protocol (MCP)** server so AI agents can manage streams as tools — uploading media, building playlists, connecting destinations, and starting, scheduling, and monitoring 24/7 streams. It's a thin, OAuth-protected layer over the same API as everything else, so an agent can do what you can do in the dashboard.
+
+## Endpoint
+
+| | |
+| --- | --- |
+| URL | `https://mcp.streamloop.app/mcp` |
+| Transport | Streamable HTTP |
+| Auth | OAuth 2.1 (PKCE, S256) |
+
+## Connect an agent
+
+Add the server URL to any MCP-capable client. On first use the client opens Streamloop's OAuth flow; you sign in and approve the scopes, and the agent gets a token — no API key to copy or paste.
+
+<Tabs>
+  <Tab title="Claude">
+    In Claude (Settings → Connectors / "Add custom connector"), add an MCP server with the URL `https://mcp.streamloop.app/mcp`, then complete the sign-in prompt.
+  </Tab>
+  <Tab title="ChatGPT">
+    Add a connector / custom MCP server pointing at `https://mcp.streamloop.app/mcp` and authorize when prompted.
+  </Tab>
+  <Tab title="Custom client">
+    Point any MCP client that speaks **Streamable HTTP** at `https://mcp.streamloop.app/mcp`. The server advertises OAuth via RFC 9728 protected-resource metadata and responds with a `WWW-Authenticate` challenge, so standards-compliant clients discover the authorization server automatically. See [Authentication](/api-reference/authentication).
+  </Tab>
+</Tabs>
+
+## Permissions
+
+The agent only gets the scopes you approve during sign-in. Grant the least it needs:
+
+| Scope | Lets the agent |
+| --- | --- |
+| `streamloop:read` | Read streams, destinations, playlists, and billing status |
+| `streamloop:write` | Create and control streams, destinations, and playlists |
+| `streamloop:destructive` | Delete streams and destinations |
+| `streamloop:billing` | Read billing and usage, and create top-up links |
+
+## Built-in safety
+
+- **Destructive and financial tools are marked.** Tools that delete resources or spend money carry a `destructiveHint` and require explicit confirmation (`confirm: true`) before they run, so an agent can't quietly delete a stream or create a top-up by accident.
+- **Scope-gated.** Each tool requires a specific scope; a tool the token isn't scoped for isn't callable.
+
+<Note>
+  The MCP tools mirror the REST API one-to-one — same operations, same data. See the full list on the [Tools](/api-reference/mcp/tools) page.
+</Note>

@@ -1,0 +1,74 @@
+---
+title: "GraphQL API"
+description: "Query Streamloop's GraphQL schema directly for full control over filtering and field selection — the layer the REST API and MCP server are built on."
+icon: "braces"
+keywords: ["streamloop graphql", "graphql api", "relay connection", "introspection", "entgql"]
+---
+
+The REST API and MCP server are curated layers over Streamloop's **GraphQL API**. If you want to select exactly the fields you need, filter and sort server-side, or traverse relationships in one round trip, you can query GraphQL directly.
+
+<Note>
+  GraphQL is the advanced, lower-level surface. For most integrations the [REST API](/api-reference/quickstart) is simpler and gives you a stable, versioned contract. Reach for GraphQL when you specifically need its flexibility.
+</Note>
+
+## Endpoint
+
+| | |
+| --- | --- |
+| URL | `https://api.streamloop.app/graphql` |
+| Method | `POST` (`application/json`) |
+| Auth | `x-api-key` or OAuth bearer — same as REST (see [Authentication](/api-reference/authentication)) |
+
+Introspection is enabled, so you can explore the full schema from any GraphQL client (GraphiQL, Apollo Sandbox, Insomnia) pointed at the endpoint.
+
+## Making a request
+
+```bash
+curl -X POST https://api.streamloop.app/graphql \
+  -H "x-api-key: sl_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{ "query": "query { me { id email firstName } }" }'
+```
+
+## Schema shape
+
+The schema is generated from the data model, so it follows consistent **Relay** conventions:
+
+- **Connections** for lists — `first` / `after` arguments and `{ totalCount, pageInfo { hasNextPage, endCursor }, edges { node { … } } }` results. (The REST API flattens these into `{ data, page }`.)
+- **`where` inputs** for filtering and **`orderBy`** for sorting on list fields.
+- A **`Cursor`** scalar for pagination positions.
+
+```graphql
+query ListStreams($first: Int = 20, $after: Cursor, $where: StreamWhereInput) {
+  streams(first: $first, after: $after, where: $where) {
+    totalCount
+    pageInfo { hasNextPage endCursor }
+    edges {
+      node {
+        id
+        name
+        state
+        createdAt
+      }
+    }
+  }
+}
+```
+
+## Choosing GraphQL vs REST vs MCP
+
+<Columns cols={3}>
+  <Card title="REST" icon="code">
+    Stable, versioned, simplest to call. The default choice for scripts and servers.
+  </Card>
+  <Card title="MCP" icon="bot">
+    For AI agents — the same operations exposed as tools over OAuth.
+  </Card>
+  <Card title="GraphQL" icon="braces">
+    Maximum control over fields, filtering, and relationships. Advanced clients.
+  </Card>
+</Columns>
+
+<Warning>
+  The GraphQL schema tracks the data model and can evolve faster than the REST contract. If you need a fixed, long-lived interface, build on the versioned [REST API](/api-reference/introduction) instead.
+</Warning>

@@ -1,0 +1,77 @@
+---
+title: "Authentication"
+description: "Authenticate Streamloop API requests with an API key or OAuth 2.1, scoped to what each integration needs."
+icon: "key"
+keywords: ["streamloop api key", "x-api-key", "oauth 2.1", "pkce", "api scopes", "bearer token"]
+---
+
+Every Streamloop API request is tied to your account. There are two ways to authenticate:
+
+- **API keys** — a single secret you send on each request. Best for your own scripts, servers, and backends.
+- **OAuth 2.1** — an authorization-code flow with PKCE. Best for third-party apps and AI agents that act on a user's behalf (this is what the [MCP server](/api-reference/mcp/overview) uses).
+
+Both work on the REST and GraphQL APIs. The MCP server uses OAuth.
+
+## API keys
+
+Send your key in the `x-api-key` header:
+
+```bash
+curl https://api.streamloop.app/v1/me \
+  -H "x-api-key: sl_your_key_here"
+```
+
+Streamloop API keys are prefixed with `sl_`. Create, list, and revoke them from your account settings in the [dashboard](https://streamloop.app/loops).
+
+<Warning>
+  An API key is a password-equivalent secret. Store it server-side, never commit it to source control, and never expose it in client-side or browser code. Revoke a key immediately if it leaks.
+</Warning>
+
+<Note>
+  In this first version, an API key carries your full account access. Per-key scopes are on the way — until then, treat every key as fully privileged and prefer OAuth (below) when you need to limit what an integration can do.
+</Note>
+
+## OAuth 2.1
+
+For apps and agents acting on behalf of a Streamloop user, use the OAuth 2.1 authorization-code flow with **PKCE (S256)**. Access tokens are ES256 JWTs you then send as a bearer token:
+
+```bash
+curl https://api.streamloop.app/v1/me \
+  -H "Authorization: Bearer <access_token>"
+```
+
+The authorization server is at `https://auth.streamloop.app` and supports **dynamic client registration** (RFC 7591), so agents can register without manual setup. Endpoints are discoverable from standard metadata documents:
+
+| Document | URL |
+| --- | --- |
+| Authorization Server metadata (RFC 8414) | `https://streamloop.app/.well-known/oauth-authorization-server` |
+| Protected Resource metadata (RFC 9728) | `https://streamloop.app/.well-known/oauth-protected-resource` |
+| OpenID configuration | `https://auth.streamloop.app/.well-known/openid-configuration` |
+| JWKS (token verification keys) | `https://auth.streamloop.app/api/auth/jwks` |
+
+Key endpoints:
+
+| Endpoint | URL |
+| --- | --- |
+| Authorization | `https://auth.streamloop.app/api/auth/oauth2/authorize` |
+| Token | `https://auth.streamloop.app/api/auth/oauth2/token` |
+| Dynamic client registration | `https://auth.streamloop.app/api/auth/oauth2/register` |
+
+## Scopes
+
+OAuth access tokens are limited to the scopes you request. Ask for the least you need.
+
+| Scope | Grants |
+| --- | --- |
+| `streamloop:read` | Read streams, destinations, playlists, and billing status |
+| `streamloop:write` | Create and control streams, destinations, and playlists |
+| `streamloop:destructive` | Delete streams and destinations |
+| `streamloop:billing` | Read billing and usage, and create top-up links |
+
+<Tip>
+  Read-only automation (dashboards, monitoring) only needs `streamloop:read`. Add `streamloop:write` to create and control streams, and request `streamloop:destructive` or `streamloop:billing` only when an integration genuinely deletes resources or moves money.
+</Tip>
+
+## Trying endpoints in the docs
+
+The **Try it** playground on each REST endpoint page authenticates with a **bearer token** (your OAuth access token). To try an endpoint with an API key instead, send the request from your own terminal with the `x-api-key` header shown above.

@@ -1,0 +1,73 @@
+---
+title: "Streamloop API"
+sidebarTitle: "Introduction"
+description: "Create and control 24/7 loop streams programmatically — over REST, an MCP server for AI agents, or GraphQL."
+icon: "plug"
+keywords: ["streamloop api", "rest api", "mcp server", "graphql", "24/7 stream api", "live stream api"]
+---
+
+The Streamloop API lets you do everything the dashboard does — upload media, build playlists, connect destinations, and start, schedule, and monitor 24/7 loop streams — from your own code or an AI agent.
+
+Everything runs on the same backend as the app, so a stream you create over the API behaves exactly like one created in the dashboard.
+
+## Three ways to integrate
+
+<Columns cols={3}>
+  <Card title="REST API" icon="code" href="/api-reference/quickstart">
+    A clean, versioned HTTP API at `api.streamloop.app/v1`. Best for scripts, servers, and backends. Start here.
+  </Card>
+  <Card title="MCP server" icon="bot" href="/api-reference/mcp/overview">
+    A Model Context Protocol server for AI agents (Claude, ChatGPT, and others) to call Streamloop as tools.
+  </Card>
+  <Card title="GraphQL" icon="braces" href="/api-reference/graphql">
+    Direct access to the underlying GraphQL schema. For advanced clients that want to shape their own queries.
+  </Card>
+</Columns>
+
+The REST API and the MCP server are both thin, curated layers over the same GraphQL core, so they expose the same capabilities — pick whichever fits how you're building.
+
+## Base URLs
+
+| Surface | Base URL |
+| --- | --- |
+| REST API | `https://api.streamloop.app/v1` |
+| OpenAPI document | `https://api.streamloop.app/v1/openapi.json` |
+| MCP server (Streamable HTTP) | `https://mcp.streamloop.app/mcp` |
+| GraphQL | `https://api.streamloop.app/graphql` |
+| Authorization server | `https://auth.streamloop.app` |
+
+## What you can do
+
+<Columns cols={2}>
+  <Card title="Streams" icon="video">
+    Create, update, start, stop, schedule, and monitor 24/7 loop streams; check readiness and live stats.
+  </Card>
+  <Card title="Media & playlists" icon="list-music">
+    Upload video and audio (direct or from a link), then build, reorder, copy, and publish playlists.
+  </Card>
+  <Card title="Destinations" icon="radio">
+    List your destinations and add custom RTMP targets.
+  </Card>
+  <Card title="Billing" icon="credit-card">
+    Read your credit balance, usage analytics, and invoices, and create top-up links (card or crypto).
+  </Card>
+</Columns>
+
+## Next steps
+
+<Steps>
+  <Step title="Authenticate">
+    Get an API key or set up OAuth — see [Authentication](/api-reference/authentication).
+  </Step>
+  <Step title="Learn the conventions">
+    Pagination, errors, and versioning are consistent across every endpoint — see [Conventions](/api-reference/conventions).
+  </Step>
+  <Step title="Make your first call">
+    Follow the [Quickstart](/api-reference/quickstart) to go from an API key to a live stream with `curl`.
+  </Step>
+</Steps>
+
+<Note>
+  The REST endpoint pages in this section are generated directly from the live
+  [OpenAPI document](https://api.streamloop.app/v1/openapi.json), so they always match what the API actually accepts and returns.
+</Note>
