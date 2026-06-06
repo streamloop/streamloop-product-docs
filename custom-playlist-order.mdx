@@ -1,0 +1,205 @@
+---
+title: "Custom playlist order"
+sidebarTitle: "Custom order"
+description: "Describe in plain language how your playlist should play — pre-rolls, time-of-day stings, weighted rotations — and Streamloop turns it into a sandboxed program that picks the next item on every loop."
+keywords:
+  ["custom playlist order", "playlist rules", "time-based playlist", "pre-roll loop", "intro then loop", "smart shuffle"]
+icon: "wand-sparkles"
+---
+
+**In order** and **Shuffle** cover most channels, but some playlists need a rule that's a little
+smarter — "play the intro once as a pre-roll, then loop the rest," or "play the Tokyo-midnight
+sting at 00:00 JST and the regular bumpers otherwise." A **custom order** lets you describe the
+rule in plain language. Streamloop turns it into a tiny sandboxed program that the stream calls
+at every item boundary to pick what plays next.
+
+This page assumes you already have a video playlist — see
+[Build and schedule your playlist](/build-and-schedule-your-playlist).
+
+## What a custom order is
+
+A custom order — called an **Order Program** — is a small piece of logic you own that decides
+the next playlist item every time the current one finishes. You don't write code: you describe
+what you want in plain language and an assistant completes a program against a fixed signature.
+Streamloop validates the program in a sandbox, dry-runs it against your playlist, and only then
+lets you assign it.
+
+Use a custom order when:
+
+- You want a **pre-roll** that plays once at the start of each session, then never again.
+- You want **time-of-day** behavior — different items at different hours, or on a specific
+  weekday.
+- You want a **weighted rotation** — some items more often than others, or grouped by tag.
+- You want to **skip or pin** specific items based on what played recently.
+
+For everything else, stick with **In order** or **Shuffle** — they're simpler and don't depend
+on an assistant.
+
+## Create an Order Program from an intent
+
+<Steps>
+  <Step title="Open the playlist's Loop behavior section">
+    In the **Playlist** tab of your loop, scroll to **Loop behavior** and choose
+    **Custom order**. If you don't have a program yet, click **Create new**.
+  </Step>
+  <Step title="Describe the rule in plain language">
+    Give the program a **name** and write the **intent** — what you want the playlist to do —
+    in your own words. Be specific about edge cases: "play the intro once as a pre-roll for
+    each session, then loop the rest in order, never repeating the intro" is better than
+    "play the intro first."
+  </Step>
+  <Step title="Pick a sample playlist (optional)">
+    Choose one of your existing video playlists to use as the example manifest. The assistant
+    sees the item names and durations so it can refer to them by name in the rule
+    ("the Tokyo-midnight sting", "the bumpers"). You can leave this blank and the system uses
+    a generic sample.
+  </Step>
+  <Step title="Submit">
+    Streamloop sends the intent to the assistant, validates the returned program against an
+    allowlist of safe operations, and runs it through a dry-run. After a few seconds the
+    program is **Ready** (and you can assign it) or **Invalid** (with diagnostics explaining
+    what went wrong). The first version is always **v1**.
+  </Step>
+</Steps>
+
+## Refine it conversationally
+
+If the first version isn't quite right, refine it — don't start over. Open the program and add
+a **feedback** turn:
+
+- "Skip the intro on Sundays."
+- "Use Tokyo time, not UTC."
+- "Pick the bumpers in shuffled order, not in sequence."
+
+Each refinement produces a **new immutable version** (**v2**, **v3**, …) with its own dry-run
+and diagnostics. Past versions are kept so you can see how the program evolved, and the
+conversation transcript shows every intent, feedback turn, and the assistant's reply.
+
+<Note>
+  Versions are immutable: you can't edit an existing version's code, only create a new one by
+  refining. The version a playlist is using is pinned by ID — refining a program does **not**
+  silently change a live stream until you assign the new version.
+</Note>
+
+## Preview and dry-run
+
+Before you assign a program, preview what it would actually do:
+
+- **Preview** runs the program against a **sample manifest** (your example playlist, or a
+  synthetic one) for ~30 picks and shows the resulting sequence. Use this to sanity-check the
+  rule.
+- **Dry-run on stream** runs the program against the **exact playlist** of a specific stream,
+  optionally starting from a future time, for up to 100 picks. Use this to verify the rule
+  against the real items, with the real names and durations the stream will see.
+
+A dry-run can finish in three ways: **Completed** (the rule ran cleanly), **Budget**
+(it hit the per-call CPU budget — usually a sign of an accidental loop), or **Fault** (the
+program threw, returned something that isn't an item, or asked for an item that isn't in the
+playlist).
+
+## Assign it to a playlist
+
+When the program is **Ready** and a dry-run looks right:
+
+<Steps>
+  <Step title="Open the playlist">
+    On the loop's **Playlist** tab, choose **Custom order** under **Loop behavior**.
+  </Step>
+  <Step title="Pick the program">
+    Select the program from the list. Only programs whose **latest Ready version** is
+    compatible with the playlist's items show up.
+  </Step>
+  <Step title="Assign">
+    Streamloop pins the latest Ready version to the playlist. If the stream is already live,
+    the new order applies **at the next item boundary** — no restart, no gap. If the stream is
+    idle, it takes effect the next time it goes live.
+  </Step>
+</Steps>
+
+### Missing-dependency warning
+
+If your program refers to items by name (for example, "play the item named `intro` first"),
+those names are recorded as **declared dependencies** when the program is validated. When you
+assign the program to a playlist that doesn't contain one of those items, Streamloop blocks
+the assignment with a list of the missing names so you can either rename items to match, add
+them to the playlist, or refine the program to use different names.
+
+If you understand the gap and want to assign anyway — for example, the missing item is genuinely
+optional in your rule — confirm the warning to **acknowledge missing dependencies** and the
+assignment goes through.
+
+## Unassign and revert to a built-in order
+
+To stop using a custom order on a playlist, open **Loop behavior** and switch back to
+**In order** or **Shuffle**. The change applies at the next item boundary on a live stream, the
+same way assignment did. Unassigning does **not** delete or retire the program — it just stops
+this playlist from using it. The same program can stay assigned to other playlists.
+
+## Failure semantics
+
+A custom order runs inside a sandbox with a strict per-call budget. If the program misbehaves on
+a live stream, Streamloop never lets it break the broadcast:
+
+- **Per-pick fallback** — if a single pick throws, times out, returns something that isn't an
+  item, or asks for an item that isn't in the current playlist, the agent **falls back** to the
+  default in-order pick for that slot and counts a fault.
+- **Session disable after 3 consecutive faults** — if three picks in a row fault, the program
+  is **disabled for the rest of that streaming session** and the playlist runs in default
+  order until the stream restarts or you assign a new version. A single successful pick resets
+  the counter, so a one-off blip doesn't disable anything.
+- **Version immutability** — disabling happens to a specific *session*, not the program. The
+  same version is still installed and will be retried on the next stream start. To fix a
+  recurring fault, refine the program to a new version (v2, v3, …) and assign that.
+
+### Retire vs. unassign
+
+There are two ways to take a program out of service, and they mean different things:
+
+- **Unassign** — remove the program from a single playlist. The program itself is untouched,
+  other playlists keep using it, and you can reassign it later. Use this to switch a playlist
+  back to a built-in order, or to try a different program.
+- **Retire** — soft-delete the program itself. A retired program is hidden by default and can
+  never be assigned again. Retire is **blocked** while the program is still assigned to any
+  playlist — Streamloop returns the list of playlists you need to unassign from first. Past
+  versions and conversation history are kept for audit.
+
+<Note>
+  A retired program is gone from the picker but its existing assignments don't break — they were
+  blocked at retire time. If you want to truly stop a program from running, unassign every
+  playlist first, then retire it.
+</Note>
+
+## Example intents
+
+A few intents the assistant handles well:
+
+- **Intro then loop** — "Play the item named `intro` exactly once at the start of each
+  session, then loop the rest of the playlist in order. Never play the intro again until the
+  stream restarts."
+- **Time-of-day sting** — "At minute 0 of every hour in Asia/Tokyo, play the item named
+  `tokyo-midnight-sting`. Otherwise, pick the next item in shuffled order with no immediate
+  repeats."
+- **Weighted bumpers** — "Play three videos, then one bumper, then three videos again. Pick
+  the bumper at random; pick the videos in order, skipping anything tagged `intro` in its
+  name."
+
+If the rule depends on the current time, the program is marked **wall-clock dependent**, which
+Streamloop surfaces in the program's details — primary and backup pods may pick differently in
+the same slot when time is involved, so use time-based rules only when the rule genuinely needs
+them.
+
+## Limits and guardrails
+
+- Programs run in a sandbox with **no network, no filesystem, no `process`** access — they only
+  see the items, the recent-play context, and a small per-session key/value store.
+- Each pick has a small CPU budget (a few tens of milliseconds). A program that loops or stalls
+  hits the budget, faults, and falls back.
+- Programs are **per-user** — you can't share, fork, or import another user's program.
+- The conversation budget is per user per day; very heavy refinement bursts may be rate-limited.
+
+## Next steps
+
+- [Build and schedule your playlist](/build-and-schedule-your-playlist) — the basics of
+  uploading items, choosing a loop, and editing while you're live.
+- [Get your stream live](/get-your-stream-live) — start the broadcast once your custom order is
+  assigned.
