@@ -1,0 +1,94 @@
+---
+title: "API tokens and connected apps"
+description: "Manage personal API tokens and review the OAuth apps and agents that can act on your Streamloop account."
+icon: "key-round"
+keywords: ["streamloop api token", "sl_ token", "revoke api key", "connected apps", "oauth consent", "mcp agent access"]
+---
+
+Streamloop gives you two ways to authorize access to your account from outside the dashboard:
+
+- **API tokens** — long-lived `sl_…` secrets you create yourself and send as the `x-api-key` header. Use them for your own scripts, servers, and CI pipelines.
+- **Connected apps** — third-party apps and AI agents that you signed into through Streamloop's OAuth flow (for example, an [MCP agent](/api-reference/mcp/overview) like Claude or ChatGPT). Use this list to review who you've authorized and revoke access when you no longer need it.
+
+Both live under your profile in the dashboard.
+
+## Open account access settings
+
+1. Open the [dashboard](https://streamloop.app/loops).
+2. Click your avatar in the top right and choose **Settings**.
+3. In the settings dialog, select **API Tokens** or **Connected Apps** from the side menu.
+
+## API tokens
+
+The **API Tokens** panel lists every personal API token on your account, when it was created, when it expires, and when it was last used. From here you can mint a new token or revoke an existing one.
+
+### Create a token
+
+1. Open **Settings → API Tokens**.
+2. Click **New token**.
+3. Give the token a descriptive name (for example, `CI pipeline` or `monitoring-prod`) so future-you can tell what it's for.
+4. Pick an expiration: **30 days**, **90 days**, **1 year**, or **No expiration**. Shorter is safer — rotate when you can.
+5. Click **Create token**.
+
+The token is shown **once**, immediately after creation:
+
+```bash
+sl_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Copy it with the copy button and store it somewhere safe — a secret manager, a CI variable, a `.env` file that's not committed. Once you dismiss the reveal banner, the full token cannot be retrieved again; if you lose it, you'll need to create a new one.
+
+<Warning>
+  An API token is a **password-equivalent secret** that carries your full account access in this first version. Store it server-side, never commit it to source control, and never ship it in client-side or browser code. If a token leaks, revoke it immediately.
+</Warning>
+
+### Use a token
+
+Send the token in the `x-api-key` header on any REST or GraphQL request:
+
+```bash
+curl https://api.streamloop.app/v1/me \
+  -H "x-api-key: sl_your_token_here"
+```
+
+See [Authentication](/api-reference/authentication) for the full request contract and OAuth alternative.
+
+### Revoke a token
+
+1. Find the token in the list.
+2. Click the trash icon and confirm.
+
+Revocation takes effect immediately — the next request that uses the token will be rejected. Revoke a token any time you suspect it's leaked, when the script or server that used it is retired, or as part of routine rotation.
+
+## Connected apps
+
+The **Connected Apps** panel shows every third-party client you've authorized through OAuth. Each entry is an app — an [MCP agent](/api-reference/mcp/overview), a custom integration, or any OAuth client — that completed Streamloop's authorization-code flow and received an access token tied to your account.
+
+For each connected app you'll see:
+
+- The app's name (or its hostname if no name is registered).
+- The scopes you granted, such as `streamloop:read` or `streamloop:write`. See the full list on the [Authentication](/api-reference/authentication#scopes) page.
+- When you first authorized the app.
+
+### Revoke an app
+
+To stop an app from acting on your behalf:
+
+1. Open **Settings → Connected Apps**.
+2. Find the app in the list.
+3. Click the trash icon and confirm.
+
+Revoking consent invalidates the app's existing access and refresh tokens — its next API call will fail, and it won't be able to mint new tokens without you signing in and approving again. If you reauthorize the same app later, it starts from a fresh consent.
+
+<Note>
+  Revoking a connected app does **not** revoke any API tokens you created yourself in **API Tokens**. The two lists are independent: API tokens are yours, connected apps belong to a third party you delegated to.
+</Note>
+
+## Which should I use?
+
+| Use this | When |
+| --- | --- |
+| **API token** | A script, server, or CI job you own and control needs to call the Streamloop API. |
+| **Connected app (OAuth)** | A third-party tool — an AI agent, a published integration — needs to act on your account, and you want to grant only specific scopes and be able to revoke it cleanly. |
+
+If you're building an integration that other Streamloop users will sign into, register it as an OAuth client instead of asking them for API tokens. See [Authentication](/api-reference/authentication) for the OAuth 2.1 flow and dynamic client registration.
