@@ -71,9 +71,22 @@ a **feedback** turn:
 - "Use Tokyo time, not UTC."
 - "Pick the bumpers in shuffled order, not in sequence."
 
-Each refinement produces a **new immutable version** (**v2**, **v3**, …) with its own dry-run
-and diagnostics. Past versions are kept so you can see how the program evolved, and the
-conversation transcript shows every intent, feedback turn, and the assistant's reply.
+The assistant **always replies with a text message**. Depending on what you asked, that turn
+can:
+
+- **Produce a new version** — the assistant generates a fresh program (**v2**, **v3**, …) with
+  its own dry-run and diagnostics, and the message explains what it changed.
+- **Ask a clarifying question** — when the intent is ambiguous (which item is the "intro"?
+  which timezone?), the assistant replies with a single question and waits for your next turn
+  before producing anything.
+- **Decline** — if the rule isn't something a custom order can safely express (network calls,
+  external data, behavior the sandbox can't support), the assistant explains why in the reply
+  and no new version is created.
+
+Only turns that produced a **Ready** version show a **Preview** and **Apply** in the
+transcript — clarifying questions and declines are conversation-only and don't add a version
+to the program's history. Past versions are kept so you can see how the program evolved, and
+the transcript shows every intent, feedback turn, and the assistant's reply.
 
 <Note>
   Versions are immutable: you can't edit an existing version's code, only create a new one by
@@ -195,7 +208,14 @@ them.
 - Each pick has a small CPU budget (a few tens of milliseconds). A program that loops or stalls
   hits the budget, faults, and falls back.
 - Programs are **per-user** — you can't share, fork, or import another user's program.
-- The conversation budget is per user per day; very heavy refinement bursts may be rate-limited.
+- Each conversation turn — the first intent or any refinement — charges a **fixed amount of
+  credits** from your wallet up front (the exact price is set by Streamloop and shown in the
+  composer before you submit). The charge stands whether the assistant produced a new version,
+  asked a clarifying question, or declined — a real reply is a real reply. If the turn faults
+  on Streamloop's side (an LLM or system error, not a decline), the credits are **refunded
+  automatically**, exactly once.
+- If your wallet doesn't have enough credits to cover the next turn, the request fails with
+  `INSUFFICIENT_CREDITS` and nothing is charged. Top up your wallet and try the turn again.
 
 ## Next steps
 
