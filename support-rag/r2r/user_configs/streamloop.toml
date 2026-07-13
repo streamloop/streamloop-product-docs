@@ -1,0 +1,53 @@
+[app]
+fast_llm = "openrouter/openai/gpt-4.1-mini"
+quality_llm = "openrouter/openai/gpt-4.1-mini"
+vlm = "openrouter/openai/gpt-4.1-mini"
+audio_lm = "openrouter/openai/gpt-4.1-mini"
+reasoning_llm = "openrouter/openai/gpt-4.1-mini"
+planning_llm = "openrouter/openai/gpt-4.1-mini"
+
+[auth]
+require_authentication = false
+
+[embedding]
+provider = "litellm"
+base_model = "openai/Snowflake/snowflake-arctic-embed-l-v2.0"
+base_dimension = nan
+batch_size = 32
+concurrent_request_limit = 2
+api_base = "http://tei-embedding/v1"
+api_key = "not-needed"
+rerank_model = "huggingface/Alibaba-NLP/gte-reranker-modernbert-base"
+rerank_url = "http://tei-reranker/rerank"
+
+[completion_embedding]
+provider = "litellm"
+base_model = "openai/Snowflake/snowflake-arctic-embed-l-v2.0"
+base_dimension = nan
+batch_size = 32
+concurrent_request_limit = 2
+api_base = "http://tei-embedding/v1"
+api_key = "not-needed"
+rerank_model = "huggingface/Alibaba-NLP/gte-reranker-modernbert-base"
+rerank_url = "http://tei-reranker/rerank"
+
+[completion]
+provider = "litellm"
+concurrent_request_limit = 1
+
+  [completion.generation_config]
+  temperature = 0.1
+  top_p = 1
+  max_tokens_to_sample = 700
+  stream = false
+
+[ingestion]
+provider = "r2r"
+strategy = "fast"
+chunking_strategy = "recursive"
+chunk_size = 1024
+chunk_overlap = 80
+automatic_extraction = false
+
+[orchestration]
+provider = "simple"

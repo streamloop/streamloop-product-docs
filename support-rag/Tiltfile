@@ -1,0 +1,20 @@
+docker_compose("docker-compose.yml")
+
+local_resource(
+    "sync-llms",
+    "npm run llms",
+    deps=["../llms.txt"],
+)
+
+local_resource(
+    "build-local-index",
+    "npm run index",
+    deps=["../llms.txt", "../docs.json"],
+)
+
+local_resource(
+    "ingest-r2r",
+    "npm run ingest:r2r",
+    deps=["../llms.txt", "src/scripts/ingest-r2r.ts", "src/rag/r2r-client.ts"],
+    resource_deps=["r2r"],
+)

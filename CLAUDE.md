@@ -29,8 +29,9 @@ broadcast lifecycle on the user's behalf.
 - **Inputs:** MP4, MKV, AVI, MOV; optional separate audio track (music/voiceover); import from
   Google Drive / Dropbox; playlists with custom ordering.
 - **Reliability:** automatic stream monitoring and recovery.
-- **Pricing:** pay-as-you-go **credits, no subscription**; new users get **free trial credits,
-  no card required**. Positioning: *"half the price, twice the quality."*
+- **Pricing:** pay-as-you-go **credits or an optional monthly credit plan selected during
+  onboarding**; credits never expire, and new users get **free trial credits with no card
+  required**. Positioning: *"half the price, twice the quality."*
 
 ## Who you're writing for (audience)
 

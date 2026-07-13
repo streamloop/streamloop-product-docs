@@ -1,0 +1,134 @@
+services:
+  support-rag:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "8787:8787"
+    volumes:
+      - ..:/docs:ro
+      - ./data:/app/data
+    environment:
+      DOCS_ROOT: /docs
+      INDEX_PATH: /app/data/index.json
+      RAG_BACKEND: r2r
+      ALLOW_LOCAL_FALLBACK: ${ALLOW_LOCAL_FALLBACK:-true}
+      R2R_BASE_URL: http://r2r:7272
+      R2R_PROJECT_NAME: streamloop_support
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-openai/gpt-4.1-mini}
+      POSTGRES_URL: postgres://postgres:postgres@postgres:5432/postgres
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
+    depends_on:
+      r2r:
+        condition: service_healthy
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "15432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tei-embedding:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-latest
+    environment:
+      HF_TOKEN: ${HF_TOKEN:-}
+      HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN:-}
+    command: ["--model-id", "Snowflake/snowflake-arctic-embed-l-v2.0", "--port", "80"]
+    ports:
+      - "18080:80"
+    volumes:
+      - hf_cache:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  tei-reranker:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-latest
+    environment:
+      HF_TOKEN: ${HF_TOKEN:-}
+      HUGGING_FACE_HUB_TOKEN: ${HF_TOKEN:-}
+    command: ["--model-id", "Alibaba-NLP/gte-reranker-modernbert-base", "--port", "80"]
+    ports:
+      - "18081:80"
+    volumes:
+      - hf_cache:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  r2r:
+    image: sciphiai/r2r:latest
+    ports:
+      - "7272:7272"
+    environment:
+      R2R_PORT: 7272
+      R2R_HOST: 0.0.0.0
+      R2R_LOG_LEVEL: INFO
+      R2R_CONFIG_PATH: /app/user_configs/streamloop.toml
+      R2R_PROJECT_NAME: streamloop_support
+      R2R_POSTGRES_USER: postgres
+      R2R_POSTGRES_PASSWORD: postgres
+      R2R_POSTGRES_HOST: postgres
+      R2R_POSTGRES_PORT: 5432
+      R2R_POSTGRES_DBNAME: postgres
+      HUGGINGFACE_API_BASE: http://tei-reranker/rerank
+      LITELLM_DROP_PARAMS: "true"
+      OPENAI_API_KEY: not-needed
+      OPENAI_API_BASE: http://tei-embedding/v1
+      OPENAI_BASE_URL: http://tei-embedding/v1
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    volumes:
+      - ./r2r/user_configs:/app/user_configs:ro
+      - ./r2r/user_tools:/app/user_tools:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      tei-embedding:
+        condition: service_healthy
+      tei-reranker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7272/v3/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  r2r-dashboard:
+    image: sciphiai/r2r-dashboard:1.0.3
+    ports:
+      - "7273:3000"
+    environment:
+      NEXT_PUBLIC_R2R_DEPLOYMENT_URL: http://localhost:7272
+      NEXT_PUBLIC_R2R_DEFAULT_EMAIL: admin@example.com
+      NEXT_PUBLIC_R2R_DEFAULT_PASSWORD: change_me_immediately
+    depends_on:
+      r2r:
+        condition: service_healthy
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.136.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    ports:
+      - "4318:4318"
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+
+volumes:
+  postgres_data:
+  hf_cache:

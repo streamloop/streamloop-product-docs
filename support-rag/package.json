@@ -1,0 +1,53 @@
+{
+  "name": "streamloop-support-rag",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/server.ts",
+    "start": "node dist/src/server.js",
+    "index": "tsx src/scripts/build-index.ts",
+    "ingest:r2r": "tsx src/scripts/ingest-r2r.ts",
+    "llms": "tsx src/scripts/generate-llms.ts",
+    "eval:dry": "DRY_RUN=true tsx src/scripts/eval.ts",
+    "e2e": "tsx src/scripts/e2e.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
+    "@opentelemetry/resources": "^2.7.1",
+    "@opentelemetry/sdk-node": "0.218.0",
+    "@opentelemetry/semantic-conventions": "^1.41.1",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.2.1",
+    "gray-matter": "^4.0.3",
+    "pg": "^8.21.0",
+    "r2r-js": "^0.4.43",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@inkeep/agents-sdk": "0.73.0",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.20.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.8"
+  },
+  "overrides": {
+    "@better-auth/oauth-provider": "1.6.14",
+    "@better-auth/sso": "1.6.14",
+    "@better-auth/utils": "0.4.1",
+    "@inkeep/agents-core": "0.73.0",
+    "@nangohq/node": "0.70.6",
+    "@nangohq/types": "0.70.6",
+    "@opentelemetry/auto-instrumentations-node": "0.76.0",
+    "@opentelemetry/exporter-prometheus": "0.218.0",
+    "@opentelemetry/sdk-node": "0.218.0",
+    "axios": "1.17.0",
+    "better-auth": "1.6.14",
+    "drizzle-orm": "0.45.2",
+    "uuid": "14.0.0"
+  }
+}
