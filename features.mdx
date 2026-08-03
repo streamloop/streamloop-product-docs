@@ -1,15 +1,15 @@
 ---
 title: "Features"
-description: "Loop pre-recorded videos and audio as a 24/7 live stream to YouTube, Twitch, Facebook Live, or any RTMP platform — up to 4K 60fps, pay-as-you-go."
+description: "Loop pre-recorded videos and audio as a 24/7 live stream — with HDR, up to 4K 60fps, multi-user team access, and pay-as-you-go pricing."
 keywords:
-  ["streamloop features", "24/7 live stream", "loop video to youtube", "pre-recorded live stream", "rtmp streaming", "stream a playlist 24/7"]
+  ["streamloop features", "HDR streaming", "team streaming access", "multi-user streaming", "24/7 live stream", "loop video to youtube", "pre-recorded live stream", "rtmp streaming"]
 icon: "list"
 ---
 
 Streamloop turns pre-recorded videos and audio into a continuous live stream that runs 24/7 on
-YouTube or any RTMP platform. Build a loop from a single video or a whole playlist, point it at a
-destination, and a cloud worker keeps it live indefinitely. Everything runs in the cloud —
-there's no OBS to set up, no encoding hardware, and no PC left switched on.
+YouTube or any RTMP platform. Stream in HDR at up to 4K 60fps, and give multiple team members
+access to the same workspace. Everything runs in the cloud — there's no OBS to set up, no
+encoding hardware, and no PC left switched on.
 
 This page covers what Streamloop can do. To put it to work, start with the [quickstart](/quickstart).
 
@@ -19,14 +19,20 @@ This page covers what Streamloop can do. To put it to work, start with the [quic
   <Card title="Go live to YouTube" icon="youtube" href="/platform/youtube">
     Connect your channel or paste a stream key, then loop your video to YouTube around the clock.
   </Card>
-  <Card title="Stream to any RTMP platform" icon="radio" href="/set-up-your-destination">
+  <Card title="Stream to any RTMP platform" icon="radio" href="/quickstart">
     Twitch, Facebook Live, Instagram, Kick, TikTok, or anything that accepts an RTMP feed.
   </Card>
-  <Card title="Loop a playlist" icon="list-video" href="/upload-your-video-and-audio-playlist">
+  <Card title="Loop a playlist" icon="list-video" href="/build-and-schedule-your-playlist">
     Queue several videos in one loop, reorder them, and play them in order or on shuffle.
   </Card>
-  <Card title="Schedule and walk away" icon="calendar-clock" href="/get-your-stream-live">
+  <Card title="Schedule and walk away" icon="calendar-clock" href="/build-and-schedule-your-playlist">
     Set a start time and let it stop on its own. Streamloop runs the stream for you.
+  </Card>
+  <Card title="Stream in HDR" icon="sun-medium" href="#video-quality">
+    Broadcast HDR video at up to 4K 60fps when your destination supports HDR.
+  </Card>
+  <Card title="Work with your team" icon="users" href="#team-access">
+    Give multiple people access to the same workspace without sharing one login.
   </Card>
 </Columns>
 
@@ -38,17 +44,19 @@ Each loop streams to one destination:
   reviewed and audited by YouTube to meet its
   [live-streaming verification requirements](https://support.google.com/youtube/answer/6259859),
   and it creates and manages the live broadcast for you. You can also paste a stream key from
-  YouTube's live control room instead. See [YouTube integration](/you-tube-integration).
+  YouTube's live control room instead. See [YouTube integration](/platform/youtube).
 - **Custom RTMP** — point a loop at any RTMP URL and stream key. This covers **Twitch**,
-  **Facebook Live**, **Instagram**, **Kick**, **TikTok**, and any other RTMP-compatible
-  platform. See [Destinations](/set-up-your-destination).
+  **Facebook Live**, **Instagram**, **Kick**, **TikTok**, and any other RTMP-compatible platform.
+  Add the destination from the loop's **General** tab by clicking **Connect a destination**.
 
 ## Video quality
 
-Pick the resolution and frame rate that fit your content and your budget:
+Pick the resolution, frame rate, dynamic range, and orientation that fit your content:
 
 - **Resolution** — 720p, 1080p, 1440p, or 4K (2160p).
 - **Frame rate** — 24, 25, 30, or 60fps.
+- **HDR** — stream high dynamic range video for wider color and brightness where your destination
+  and your viewers' playback devices support HDR.
 - **Orientation** — landscape (horizontal) or portrait (vertical), so the same loop works for a
   TV-style channel or a vertical feed like Shorts, TikTok, or Reels.
 
@@ -66,7 +74,7 @@ Loop more than one video:
 - **Edit while you're live** — add, remove, or reorder videos on a running stream, then publish
   the change. The on-air playlist updates almost instantly, with no stop-and-restart.
 
-See [Upload your video and audio](/upload-your-video-and-audio-playlist).
+See [Build and schedule your playlist](/build-and-schedule-your-playlist).
 
 ## Your video and audio
 
@@ -87,6 +95,14 @@ See [Upload your video and audio](/upload-your-video-and-audio-playlist).
 - **Stop automatically** — give a loop a run length or a specific end time, or let it run
   indefinitely.
 - **Start on upload** — begin streaming automatically as soon as your upload finishes.
+
+## Team access
+
+Streamloop supports multi-user team access. Multiple people can work in the same workspace with
+their own sign-in, so you do not need to share account credentials.
+
+Use team access when more than one person needs to build playlists, manage streams, or monitor a
+channel. Everyone works with the streams and media available to the shared workspace.
 
 ## Reliability and security
 
@@ -110,7 +126,7 @@ YouTube Studio required:
 - **Schedule on YouTube** — when you schedule a loop, Streamloop creates the upcoming YouTube
   broadcast and keeps it in sync if you reschedule or cancel.
 
-See [YouTube integration](/you-tube-integration) for the full setup.
+See [YouTube integration](/platform/youtube) for the full setup.
 
 ## Pricing
 
@@ -140,13 +156,27 @@ Cost scales with resolution, frame rate, and how long the stream runs:
 For the full breakdown — metering, refunds, and what happens if you run low — see
 [How billing works](/billing).
 
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Does Streamloop support HDR video?">
+    Yes. Streamloop supports HDR streaming at resolutions up to 4K and frame rates up to 60fps.
+    Your destination and your viewers' playback devices must also support HDR for them to see the
+    HDR presentation.
+  </Accordion>
+  <Accordion title="Can multiple team members use Streamloop?">
+    Yes. Multi-user team access lets multiple people work in the same Streamloop workspace with
+    their own sign-in. Your team can collaborate without sharing one account password.
+  </Accordion>
+</AccordionGroup>
+
 ## Integrations
 
 <Columns cols={2}>
-  <Card title="YouTube" icon="youtube" href="/you-tube-integration">
+  <Card title="YouTube" icon="youtube" href="/platform/youtube">
     Connect your YouTube channel so Streamloop creates and manages the live broadcast for you.
   </Card>
-  <Card title="AI agents (MCP)" icon="bot" href="/mcp-agent">
+  <Card title="AI agents (MCP)" icon="bot" href="/api-reference/mcp/overview">
     Create and control streams from MCP-compatible AI tools through Streamloop's MCP server.
   </Card>
 </Columns>
