@@ -55,8 +55,51 @@ how the broadcast appears on your channel:
 - **Recording and DVR**, plus a **latency** mode (normal, low, or ultra-low).
 - **Publish upcoming broadcast on YouTube when scheduled** — when on, scheduling the loop also
   creates the upcoming broadcast on your channel and keeps it in sync.
+- **Ad frequency** — let YouTube run automatic mid-roll ads on the broadcast (see below).
 
 See [YouTube broadcast controls](/features#youtube-broadcast-controls) for the full list.
+
+## Automatic mid-roll ads
+
+In the loop's **YouTube** tab, **Ad frequency** sets how often YouTube inserts automatic
+mid-roll ads during the broadcast. Streamloop sends the cadence to YouTube once when the
+broadcast is provisioned, and YouTube itself places the ads on that schedule — there is no
+self-run timer and you don't pick individual ad breaks.
+
+Pick one of four tiers:
+
+| Tier | What it does |
+| --- | --- |
+| **Off** | No automatic mid-roll ads. Pre-roll and any manual breaks still follow your YouTube settings. |
+| **Conservative** | Roughly one break every **30 minutes**. |
+| **Balanced** | Roughly one break every **18 minutes**. |
+| **Aggressive** | Roughly one break every **6 minutes** (YouTube's tightest cadence). |
+
+### YouTube Partner Program is required
+
+Automatic mid-roll ads only work on channels enrolled in the
+[YouTube Partner Program (YPP)](https://support.google.com/youtube/answer/72851). On channels
+that aren't monetization-eligible, the **Ad frequency** control is hidden or disabled and
+Streamloop skips the cuepoint schedule write — YouTube rejects monetization changes on non-YPP
+channels.
+
+Streamloop reads your channel's YPP status from the cached YouTube channel metadata, which is
+refreshed in the background and can be up to **24 hours stale**. If your channel was just
+accepted into YPP and the toggle still hasn't appeared, wait for the next refresh or reconnect
+the channel to pull it immediately.
+
+### Soft-fail behavior
+
+The ad-schedule write to YouTube is best-effort: if YouTube rejects the cuepoint update (for
+example, the channel lost monetization between refreshes), the **broadcast still goes live**.
+The failure is recorded against the destination but doesn't block the stream and doesn't
+disconnect your channel.
+
+<Note>
+  Automatic mid-roll ads are only available on the managed YouTube connection. The
+  [stream key path](/platform/youtube-rtmp) doesn't support this — set ad breaks in YouTube
+  Studio on the broadcast you created there.
+</Note>
 
 ## Reconnect when access expires
 
