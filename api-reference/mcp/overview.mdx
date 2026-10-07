@@ -1,12 +1,14 @@
 ---
 title: "MCP server"
 sidebarTitle: "Overview"
-description: "Let AI agents like Claude and ChatGPT run Streamloop as tools — create, control, and monitor streams over the Model Context Protocol."
+description: "Let AI agents like Claude, ChatGPT and Cursor run Streamloop as tools: set up 24/7 loops, multistream to several platforms and build live scenes over the Model Context Protocol."
 icon: "bot"
-keywords: ["streamloop mcp", "model context protocol", "mcp server", "ai agent streaming", "claude mcp", "chatgpt mcp"]
+keywords: ["streamloop mcp", "model context protocol", "mcp server", "ai agent streaming", "claude mcp", "chatgpt mcp", "scene mcp"]
 ---
 
-Streamloop runs a hosted **Model Context Protocol (MCP)** server so AI agents can manage streams as tools — uploading media, building playlists, connecting destinations, and starting, scheduling, and monitoring 24/7 streams. It's a thin, OAuth-protected layer over the same API as everything else, so an agent can do what you can do in the dashboard.
+Streamloop runs a hosted **Model Context Protocol (MCP)** server. An AI agent connected to it can do what you do in the dashboard: upload media, fill playlists, connect destinations, start and schedule 24/7 streams, and build and run scenes. It signs in with OAuth as you, so it sees only the workspaces you belong to.
+
+For a step-by-step setup in Claude, ChatGPT, Cursor or Claude Code, see [Use Streamloop with AI](/use-with-ai).
 
 ## Endpoint
 
@@ -14,40 +16,135 @@ Streamloop runs a hosted **Model Context Protocol (MCP)** server so AI agents ca
 | --- | --- |
 | URL | `https://mcp.streamloop.app/mcp` |
 | Transport | Streamable HTTP |
-| Auth | OAuth 2.1 (PKCE, S256) |
+| Auth | OAuth 2.1 (authorization code with PKCE, S256) |
+| Tools | 67 — see [Tools](/api-reference/mcp/tools) |
 
 ## Connect an agent
 
-Add the server URL to any MCP-capable client. On first use the client opens Streamloop's OAuth flow; you sign in and approve the scopes, and the agent gets a token — no API key to copy or paste.
+Add the server URL to any MCP-capable client. On first use the client opens Streamloop's sign-in page. You sign in, approve the scopes, and the client gets a token. There's no API key to copy.
 
 <Tabs>
   <Tab title="Claude">
-    In Claude (Settings → Connectors / "Add custom connector"), add an MCP server with the URL `https://mcp.streamloop.app/mcp`, then complete the sign-in prompt.
+    In Claude, open **Settings → Connectors**, choose **Add custom connector**, and enter `https://mcp.streamloop.app/mcp`. Then complete the sign-in prompt.
   </Tab>
   <Tab title="ChatGPT">
-    Add a connector / custom MCP server pointing at `https://mcp.streamloop.app/mcp` and authorize when prompted.
+    Add a custom connector (MCP server) with the URL `https://mcp.streamloop.app/mcp`, and authorize when prompted.
+  </Tab>
+  <Tab title="Claude Code">
+    Install the Streamloop plugin, which adds the server and the Streamloop skills:
+
+    ```text
+    /plugin marketplace add streamloop/live-scene
+    /plugin install streamloop@streamloop
+    ```
+
+    Or add only the server: `claude mcp add --transport http streamloop https://mcp.streamloop.app/mcp`.
   </Tab>
   <Tab title="Custom client">
-    Point any MCP client that speaks **Streamable HTTP** at `https://mcp.streamloop.app/mcp`. The server advertises OAuth via RFC 9728 protected-resource metadata and responds with a `WWW-Authenticate` challenge, so standards-compliant clients discover the authorization server automatically. See [Authentication](/api-reference/authentication).
+    Point any MCP client that speaks **Streamable HTTP** at `https://mcp.streamloop.app/mcp`. An unauthenticated request gets a `401` with a `WWW-Authenticate` challenge, and the server publishes RFC 9728 protected-resource metadata at `https://mcp.streamloop.app/.well-known/oauth-protected-resource`. Standards-compliant clients find the authorization server from there. See [Authentication](/api-reference/authentication).
   </Tab>
 </Tabs>
 
 ## Permissions
 
-The agent only gets the scopes you approve during sign-in. Grant the least it needs:
+The agent gets only the scopes you approve. Each scope includes the ones above it:
 
 | Scope | Lets the agent |
 | --- | --- |
-| `streamloop:read` | Read streams, destinations, playlists, and billing status |
-| `streamloop:write` | Create and control streams, destinations, and playlists |
-| `streamloop:destructive` | Delete streams and destinations |
-| `streamloop:billing` | Read billing and usage, and create top-up links |
+| `streamloop:read` | Read streams, destinations, playlists, uploads, workspaces, credits and scenes |
+| `streamloop:write` | Everything in `read`, plus create and control streams, destinations, playlists, uploads and scenes |
+| `streamloop:destructive` | Everything in `write`, plus delete streams, uploads and scenes, discard a scene's draft, and revoke a scene's ingest keys and secrets |
 
-## Built-in safety
-
-- **Destructive and financial tools are marked.** Tools that delete resources or spend money carry a `destructiveHint` and require explicit confirmation (`confirm: true`) before they run, so an agent can't quietly delete a stream or create a top-up by accident.
-- **Scope-gated.** Each tool requires a specific scope; a tool the token isn't scoped for isn't callable.
+A tool the token's scopes don't cover answers `Error [INSUFFICIENT_SCOPE]` and names the scope it needs.
 
 <Note>
-  The MCP tools mirror the REST API one-to-one — same operations, same data. See the full list on the [Tools](/api-reference/mcp/tools) page.
+  No MCP tool can spend money. The agent can read your credit balance and usage, but buying credits happens in the [dashboard](https://streamloop.app/loops).
 </Note>
+
+## Workspaces
+
+Everything (streams, media, playlists, destinations, scenes and credits) belongs to one [workspace](/workspaces-and-team). The agent works in one workspace at a time:
+
+1. The workspace it chose with `select_workspace` in this connection, if any.
+2. Otherwise the workspace your client sends in an `X-Workspace-Id` header, if you configured one.
+3. Otherwise your default workspace from sign-in.
+
+`get_selected_workspace` says which one is in use and why. An empty list is often the wrong workspace, not an empty account.
+
+## Safety
+
+- **Irreversible tools need `confirm: true`.** Six tools delete or revoke something for good (marked **Destructive** on the [Tools](/api-reference/mcp/tools) page). Called without `confirm: true`, they change nothing and answer `Error [CONFIRM_REQUIRED]`. A well-behaved agent then tells you what the call will do and asks before it calls again.
+- **Changes on air ask first.** `publish_scene` and `revert_scene` on a scene that a running stream plays need `confirm: true`, because viewers see the change at once. Without it they answer `CONFIRM_REQUIRED` and name the streams.
+- **Tool hints.** Every tool declares the standard MCP annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), so clients can auto-approve reads and ask you before writes. `start_stream`, `schedule_stream` and `swap_live_playlist` put video in front of the public.
+- **Unknown arguments are refused**, with the nearest valid field name, so a typo like `dryrun` never runs a real publish.
+
+## Errors
+
+A failed tool call returns `isError: true` and one line of text with a stable code in brackets:
+
+```text
+Error [STREAM_LIVE]: Destination change refused
+```
+
+Act on the code, not the wording. A scene error adds the details after the message: the list of problems, or the `currentRevision`. Common codes:
+
+| Code | Meaning |
+| --- | --- |
+| `INVALID_INPUT` | An argument is missing, wrong or unknown. |
+| `INSUFFICIENT_SCOPE` | The token lacks the scope the tool needs. |
+| `CONFIRM_REQUIRED` | The call needs `confirm: true`. Ask the user first. |
+| `NOT_FOUND` | No such id in the selected workspace. |
+| `STREAM_LIVE`, `STREAM_ACTIVE` | The stream must be stopped for this change. |
+| `MULTISTREAM_NOT_ENABLED` | A second destination needs multistream on the workspace (rolling out). |
+| `DESTINATION_LIMIT`, `YOUTUBE_DESTINATION_LIMIT` | At most 5 destinations per stream, and at most one YouTube channel. |
+| `IN_USE` | Something still uses it (for example, a playlist uses the upload). |
+| `CONFLICT` | Someone changed it since you read it. The error carries `currentRevision`. |
+| `CHECK_FAILED`, `SCENE_INVALID` | A scene change or publish would break the scene. Nothing changed, and the error lists each problem. |
+
+A failed sign-in reads `Authorization failed [CODE]: …`. Reconnect the server to get a new token.
+
+## Scenes
+
+<Info>
+  Scenes are in private beta. See [Scenes](/scenes/overview) to request access.
+</Info>
+
+A scene (id `scn_…`) is a live, designed stream: frames of text, pictures, video, web pages, tables of data and tickers, the sources they read, and a script. Agents edit a scene the same way the studio's own [AI assistant](/scenes/ai-assistant) does, with four tools that act on **paths**:
+
+| Tool | What it does |
+| --- | --- |
+| `scene_get` | Reads anything by path. `""` lists the kinds of thing a scene holds; `element/*` lists the building blocks and their props; `scene/<id>` returns one frame as JSX code. With `as: "image"` it returns a picture of the frame as it goes on air, with any problems (outside title-safe, overlapping, text too small). |
+| `scene_set` | Creates or changes one thing: a whole value, or exact text edits to its code. Every change is checked as the studio checks it. A refused change changes nothing and lists every problem. |
+| `scene_remove` | Deletes whole things, all or nothing. Anything still in use is refused, with what uses it. |
+| `scene_probe` | Fetches a URL once, changing nothing, to show what a table would read from it. |
+
+The main paths:
+
+| Path | What it is |
+| --- | --- |
+| `scene/<id>` | One full frame: a background and layers. One is on air at a time. |
+| `scene/<id>/<layer>` | One layer in a frame. |
+| `source/<kind>/<id>` | Something the scene reads: a camera, an RTMP or SRT input, a file, a playlist, a web page, a table (`data`) or a formula over tables. |
+| `control/<id>` | A switch, text or choice the operator sets while it runs. |
+| `component/<id>` | A reusable element, such as a lower third, written in TSX. |
+| `script/show.ts`, `script/state.ts` | The scene's behaviour, and the shape of its state. |
+| `tokens` | Named colours, fonts and sizes. |
+| `element/<Type>` | The building blocks (`Text`, `Image`, `Video`, `Stack`, `Ticker`, …). Read-only. |
+
+**Revisions.** Every answer carries a `revision` for what it read and a `draftRevision` for the whole draft. Send the `revision` back to `scene_set` or `scene_remove` and the change is refused with `CONFLICT` (and the `currentRevision`) if someone edited it in between. Studios open on the scene show the agent's edits live.
+
+**Publishing.** Edits change the draft only. Nothing reaches viewers until you publish:
+
+<Steps>
+  <Step title="Check">
+    `publish_scene` with `dryRun: true` checks the whole scene and lists what would change, publishing nothing.
+  </Step>
+  <Step title="Publish">
+    `publish_scene` with the `draftRevision` of your last answer publishes exactly the draft you saw. If a running stream plays the scene, it also needs `confirm: true`. An unchanged draft makes no new version.
+  </Step>
+  <Step title="Put it on a stream">
+    `set_stream_scene` while the stream is stopped, then `start_stream`. The stream opens on the scene's first frame.
+  </Step>
+</Steps>
+
+While it runs, `control_scene` takes frames to air, sets controls and replaces a table's rows, and `get_scene_state` says what's on air. `list_scene_versions` and `revert_scene` go back to an earlier version; `discard_scene_draft` throws the draft away.

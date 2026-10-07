@@ -57,9 +57,11 @@ This is the public docs site, built on **Mintlify**. Every page describes the re
 keep it that way. Two tabs:
 
 - **Guides** — groups: Getting started · Video loops · Scenes (beta) · Destinations ·
-  Account & team. `use-with-ai.mdx` is a hidden placeholder until the API/MCP work settles.
-- **API reference** — hand-written pages under `api-reference/` plus the REST group, which
-  Mintlify generates from the live `https://api.streamloop.app/v1/openapi.json`.
+  Account & team. `use-with-ai.mdx` covers connecting assistants to the MCP server and the
+  Claude Code plugin (`streamloop/live-scene`, `plugin/streamloop`).
+- **API reference** — hand-written pages under `api-reference/` plus two generated groups: the
+  REST group from `https://api.streamloop.app/v1/openapi.json`, and the Scenes API group from
+  `https://api.streamloop.app/v1/scenes/openapi.json`.
 
 Workspaces **are** a Streamloop concept (shared loops, uploads, destinations and credit wallet,
 roles owner/admin/member).

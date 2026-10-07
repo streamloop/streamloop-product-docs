@@ -131,6 +131,20 @@
             "openapi": "https://api.streamloop.app/v1/openapi.json"
           },
           {
+            "group": "Scenes API",
+            "icon": "layers",
+            "pages": [
+              "api-reference/scenes",
+              {
+                "group": "Endpoints",
+                "openapi": {
+                  "source": "https://api.streamloop.app/v1/scenes/openapi.json",
+                  "directory": "api-reference/scenes-api"
+                }
+              }
+            ]
+          },
+          {
             "group": "MCP server",
             "icon": "bot",
             "expanded": true,
