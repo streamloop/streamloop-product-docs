@@ -108,7 +108,7 @@ H=(-H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS")
       -d '{ "dryRun": true }'
     ```
 
-    Then publish. Pass the `draftRevision` from your last answer to publish exactly the draft you saw, even if someone edits it meanwhile:
+    Then publish. Pass the `draftRevision` from your last answer (it's required; `GET /v1/scenes/{id}` and every resource answer carry the current one, also as the `Draft-Revision` header) to publish exactly the draft you saw, even if someone edits it meanwhile:
 
     ```bash
     curl "${H[@]}" -X POST "$SCN/publish" \
@@ -126,7 +126,9 @@ H=(-H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS")
     }
     ```
 
-    `changes` lists what changed since the previous version, as resource paths. `notes` says what to know, for example edits that a pinned `draftRevision` left in the draft. A draft equal to what's published makes no version (`"unchanged": true`).
+    `changes` lists what changed since the previous version, as resource paths. If the draft changed after your `draftRevision`, those edits aren't published: the answer says so with `"stale": true` and a note. A draft equal to what's published makes no version (`"unchanged": true`).
+
+    If someone published after the version your draft is based on, publishing it would take their version back. The answer is `409 STALE_PUBLISH` with `publishedVersion`, `basedOn` and `reverted` (what would be undone). Read the draft again and publish its new `draftRevision`, or send `"overwritePublished": <publishedVersion>` to replace that version on purpose.
   </Step>
 
   <Step title="Put it on a stream">
@@ -140,7 +142,7 @@ H=(-H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS")
     curl "${H[@]}" -X POST https://api.streamloop.app/v1/streams/stream_…/start
     ```
 
-    The stream opens on the scene's first frame. While the stream runs, `PUT …/scene` answers `409 STREAM_ACTIVE`: stop it first. `{ "sceneId": null }` goes back to the stream's video playlist.
+    The stream opens on the scene's first frame. While the stream runs, `PUT …/scene` answers `409 STREAM_LIVE`: stop it first. `{ "sceneId": null }` goes back to the stream's video playlist.
   </Step>
 </Steps>
 
@@ -148,10 +150,10 @@ H=(-H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS")
 
 Once a scene is on air:
 
-- **Publishing changes what viewers see at once.** So `POST /publish` (and `POST /revert`) on a scene a running stream plays needs `"confirm": true`. Without it the answer is `409 CONFIRM_REQUIRED`, naming the streams.
+- **Publishing changes what viewers see at once.** So `POST /publish` (and `POST /revert`) on a scene a running stream plays answers `409 CONFIRM_REQUIRED`, naming the streams. Send it again with `"confirm": true` to accept that. `confirm` always means "I accept what the refusal named".
 - `GET /v1/scenes/{id}/live` says what's on air on each stream: the frame, the next one cued, control values and source status.
-- `POST /v1/scenes/{id}/live` acts like an operator: `goScene` (take a frame to air, with a transition such as `fade`), `next` (cue a frame), `setControl`, `setData` (replace a table's rows) and `skip` (a playlist source's next item). It answers `409 SCENE_OFFLINE` when no stream plays the scene.
-- `GET /versions` lists published versions; `POST /revert` with `{ "version": n }` publishes an old one again as the next version; `POST /discard` puts the draft back to what's published.
+- `POST /v1/scenes/{id}/live` acts like an operator: `goScene` (take a frame to air, with a transition such as `fade`), `next` (cue a frame), `setControl`, `setData` (replace a table's rows) and `skip` (a playlist source's next item). The action is checked first against what's published (a frame, control, table or playlist source that isn't there, or a toggle given `"yes"`, is `422 INVALID_INPUT`); then it answers `409 SCENE_OFFLINE` when no stream plays the scene.
+- `GET /versions` lists published versions; `POST /revert` with `{ "version": n }` publishes an old one again as the next version; `POST /discard` with `{ "draftRevision": "…" }` puts the draft back to what's published. Add `"dryRun": true` first to see what would be lost (`lost`). If the draft changed after your `draftRevision`, nothing is discarded (`409 CONFLICT`).
 
 Live inputs and keys:
 
@@ -195,15 +197,15 @@ Errors are [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) problem documents 
 
 | Status | Codes |
 | --- | --- |
-| 400 | `INVALID_INPUT`, `WORKSPACE_REQUIRED` |
+| 400 | `BAD_REQUEST` (a body or query that can't be parsed), `WORKSPACE_REQUIRED` |
 | 401 | `UNAUTHENTICATED` |
 | 403 | `INSUFFICIENT_SCOPE`, `WORKSPACE_FORBIDDEN` |
 | 404 | `NOT_FOUND` |
-| 409 | `CONFLICT` (with `currentRevision`), `EDIT_NO_MATCH`, `IN_USE`, `CONFIRM_REQUIRED`, `NOT_PUBLISHED`, `SCENE_IN_USE`, `SCENE_OFFLINE`, `INGEST_KEY_REVOKED` |
+| 409 | `CONFLICT` (with `currentRevision`), `EDIT_NO_MATCH`, `EDIT_AMBIGUOUS`, `IN_USE`, `CONFIRM_REQUIRED`, `STALE_PUBLISH` (with `publishedVersion`, `basedOn`, `reverted`), `DRAFT_NOT_SAVED`, `NOT_PUBLISHED`, `SCENE_IN_USE`, `SCENE_OFFLINE`, `INGEST_KEY_REVOKED` |
 | 412 | `PRECONDITION_FAILED` (with `currentRevision`) |
 | 413 | `TOO_LARGE` |
-| 415 | `UNSUPPORTED_MEDIA_TYPE`: code sent as the wrong kind for its path |
-| 422 | `CHECK_FAILED`, `SCENE_INVALID` (with `errors`), `IDEMPOTENCY_KEY_REUSED`, `CAMERA_INVALID`, `SECRET_MISSING` |
+| 415 | `UNSUPPORTED_MEDIA_TYPE`: a body that is neither JSON nor code, or code sent as the wrong kind for its path |
+| 422 | `INVALID_INPUT` (a field, value or query parameter that doesn't fit; `detail` names it), `CHECK_FAILED`, `SCENE_INVALID` (with `errors`), `IDEMPOTENCY_KEY_REUSED`, `CAMERA_INVALID`, `SECRET_MISSING` |
 | 429 | `RATE_LIMITED` |
 | 5xx | `INTERNAL`, `UNAVAILABLE`, `SCENE_TIMEOUT`: retry with backoff |
 

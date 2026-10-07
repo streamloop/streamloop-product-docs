@@ -135,18 +135,21 @@ Some problems carry more fields, such as a `reason`, or `errors` and `currentRev
 
 | Status | Codes |
 | --- | --- |
-| `400` | `WORKSPACE_REQUIRED` |
+| `400` | `BAD_REQUEST` (a body or query that can't be parsed), `INVALID_BATCH`, `WORKSPACE_REQUIRED` |
 | `401` | `UNAUTHENTICATED` |
 | `402` | `INSUFFICIENT_CREDITS` |
-| `403` | `FORBIDDEN`, `UNAUTHORIZED`, `INSUFFICIENT_SCOPE`, `WORKSPACE_FORBIDDEN`, `MULTISTREAM_NOT_ENABLED` |
+| `403` | `FORBIDDEN`, `INSUFFICIENT_SCOPE`, `WORKSPACE_FORBIDDEN`, `MULTISTREAM_NOT_ENABLED` |
 | `404` | `NOT_FOUND` |
-| `409` | `STREAM_LIVE`, `STREAM_ACTIVE`, `STREAM_ILLEGAL_TRANSITION`, `IMMUTABLE_WHILE_LIVE`, `NOT_LIVE`, `DESTINATION_LIMIT`, `YOUTUBE_DESTINATION_LIMIT`, `DESTINATION_DUPLICATE`, `DUPLICATE_DESTINATION`, `LAST_DESTINATION`, `MIRROR_DESTINATION_CHANGE_BLOCKED`, `IN_USE`, `UPLOAD_INCOMPLETE`, `UPLOAD_ALREADY_COMPLETED`, `STALE_DRAFT`, `CONFLICT` |
-| `422` | `BAD_USER_INPUT`, `VALIDATION`, `VALIDATION_FAILED`, `GRAPHQL_VALIDATION_FAILED`, `GRAPHQL_PARSE_FAILED`, `STREAM_GUARD_FAILED`, `DESTINATION_INCOMPATIBLE`, `SCENE_MISSING`, `SCENE_NOT_PUBLISHED`, `SCENE_ASSET_MISSING`, `SCENE_PLAYLIST_MISSING`, `SCENE_PLAYLISTS_UNSUPPORTED`, `SCENE_QUALITY_UNSUPPORTED`, `UPLOAD_REMOVED`, `UNSUPPORTED_TYPE`, `INVALID_INPUT`, `FILE_TOO_LARGE`, `IDEMPOTENCY_KEY_REUSED` |
+| `409` | `STREAM_LIVE`, `STREAM_ILLEGAL_TRANSITION`, `IMMUTABLE_WHILE_LIVE`, `NOT_LIVE`, `DESTINATION_LIMIT`, `YOUTUBE_DESTINATION_LIMIT`, `DESTINATION_DUPLICATE`, `LAST_DESTINATION`, `MIRROR_DESTINATION_CHANGE_BLOCKED`, `IN_USE`, `UPLOAD_INCOMPLETE`, `UPLOAD_ALREADY_COMPLETED`, `STALE_DRAFT`, `CONFLICT` |
+| `422` | `INVALID_INPUT` (a request that parses but doesn't fit: a missing or unknown field, a value of the wrong type), `STREAM_GUARD_FAILED`, `DESTINATION_INCOMPATIBLE`, `SCENE_MISSING`, `SCENE_NOT_PUBLISHED`, `SCENE_ASSET_MISSING`, `SCENE_PLAYLIST_MISSING`, `SCENE_PLAYLISTS_UNSUPPORTED`, `SCENE_QUALITY_UNSUPPORTED`, `UPLOAD_REMOVED`, `UNSUPPORTED_TYPE`, `FILE_TOO_LARGE`, `IDEMPOTENCY_KEY_REUSED` |
 | `429` | `RATE_LIMITED` |
-| `500` | `INTERNAL`, `INTERNAL_SERVER_ERROR` |
-| `503` | `FAILED` |
+| `500` | `INTERNAL` |
+| `502` | `UPSTREAM_ERROR` (an unexpected failure) |
+| `503` | `UNAVAILABLE` (try again) |
 
-A code not in this table follows its suffix: `…_NOT_FOUND` is `404`, `…_FORBIDDEN` is `403`, `…_UNAVAILABLE` is `503`, and anything else is `422`. A `502` with `UPSTREAM_ERROR` is an unexpected failure. The Scenes API has its own codes as well. See [Scenes API errors](/api-reference/scenes#errors).
+Both APIs use the same split: `400 BAD_REQUEST` only when the request can't be read at all (a body that isn't JSON), `422 INVALID_INPUT` for one that can be read but doesn't fit, with `detail` naming the field. An unknown query parameter is `422 INVALID_INPUT` too.
+
+A code not in this table follows its suffix: `…_NOT_FOUND` is `404`, `…_FORBIDDEN` is `403`, `…_UNAVAILABLE` is `503`, and anything else is `422`. The Scenes API has its own codes as well. See [Scenes API errors](/api-reference/scenes#errors).
 
 <Tip>
   Treat `429` and `5xx` as retryable: back off, retry with jitter, and send the same `Idempotency-Key`. Treat other `4xx` responses as permanent. Fix the request instead of retrying it.
