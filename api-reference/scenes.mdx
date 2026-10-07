@@ -100,15 +100,15 @@ H=(-H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS")
   </Step>
 
   <Step title="Check, then publish">
-    A dry run checks the whole scene and lists what would change, publishing nothing:
+    Publishing takes the `draftRevision` of the draft you checked. It's required: `GET /v1/scenes/{id}` and every resource answer carry the current one, also as the `Draft-Revision` header. So you publish exactly the draft you saw, even if someone edits it meanwhile. A dry run checks the whole scene and lists what would change, publishing nothing:
 
     ```bash
     curl "${H[@]}" -X POST "$SCN/publish" \
       -H "Content-Type: application/json" \
-      -d '{ "dryRun": true }'
+      -d '{ "draftRevision": "…", "dryRun": true }'
     ```
 
-    Then publish. Pass the `draftRevision` from your last answer (it's required; `GET /v1/scenes/{id}` and every resource answer carry the current one, also as the `Draft-Revision` header) to publish exactly the draft you saw, even if someone edits it meanwhile:
+    Then publish:
 
     ```bash
     curl "${H[@]}" -X POST "$SCN/publish" \
