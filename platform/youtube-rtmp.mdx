@@ -25,11 +25,18 @@ example, on a channel you can't connect with Google sign-in.
   </Step>
 </Steps>
 
+<Warning>
+  Use the channel's persistent stream key, not the one-off key of a single scheduled broadcast.
+  A one-off key stops working when that broadcast ends, and your 24/7 loop ends with it. If your
+  channel has never streamed, YouTube can take up to 24 hours to enable live streaming.
+</Warning>
+
 ## Add it to Streamloop
 
 <Steps>
   <Step title="Open the destination picker">
-    In your loop's **General** tab, click **Connect a destination**.
+    In your loop's **General** tab, click **Connect a destination** (or **Add destination** if
+    your loop has a destination list).
   </Step>
   <Step title="Choose YouTube (RTMP stream key)">
     Pick **YouTube · RTMP stream key**. Give it a **Display name**, leave the **RTMP URL** as the

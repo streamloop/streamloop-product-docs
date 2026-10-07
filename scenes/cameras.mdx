@@ -1,0 +1,64 @@
+---
+title: "IP cameras"
+sidebarTitle: "Cameras"
+description: "Put an internet-reachable IP camera on air in a Streamloop scene: add its RTSP address, test the connection, and keep its password safe."
+keywords:
+  ["ip camera live stream", "rtsp to youtube", "stream security camera 24/7", "rtsp camera cloud stream", "webcam to youtube 24/7"]
+icon: "cctv"
+---
+
+<Info>
+  Scenes are in private beta. See [Scenes](/scenes/overview) to request access.
+</Info>
+
+An **IP camera** source pulls a camera's live feed straight from the internet over **RTSP**, the
+protocol most IP cameras speak. Streamloop connects to the camera, so nothing needs to run on your
+side.
+
+## Before you start
+
+- **The camera must be reachable from the internet**: a public IP address, or a port forward on your
+  router (RTSP usually uses port 554). Cameras on a private or local network address are refused.
+- If your camera can push RTMP itself, use an [RTMP input](/scenes/live-inputs) instead.
+- You need the camera's RTSP address, for example `rtsp://203.0.113.7:554/stream1`, and its
+  username and password if it has one. The camera's manual or app lists the address.
+
+## Add a camera
+
+<Steps>
+  <Step title="Add the source">
+    In **Sources & layers**, click **Add source** and pick **IP camera**. Drag it onto a scene.
+  </Step>
+  <Step title="Enter the details">
+    Enter the **RTSP URL**, **Username** and **Password**. Leave **Transport** on **TCP** unless your
+    camera only works over UDP. TCP gets through most routers and firewalls.
+  </Step>
+  <Step title="Test the connection">
+    Click **Test connection**. A working camera shows its resolution, frame rate and a snapshot, which
+    the canvas uses as its preview. Cameras that send H.265 video work, but show no snapshot.
+  </Step>
+  <Step title="Save and publish">
+    Click **Save camera**, then [publish](/scenes/build-a-scene#publish) the scene.
+  </Step>
+</Steps>
+
+## If the test fails
+
+| Result | What to check |
+| --- | --- |
+| Refused | The address points to a private network. Use the camera's public address or a port forward. |
+| Unreachable | The camera or router isn't accepting connections. Check the port forward and that the camera is on. |
+| Timeout | The camera didn't answer in time. Check the address and port. |
+| Auth | The username or password is wrong. |
+| Not found | The address is right but the stream path isn't. Check the camera's manual for its RTSP path. |
+| Unsupported | The camera sends a format Streamloop can't play. Try another stream profile on the camera. |
+
+## Keep it working
+
+- **Passwords stay private.** The camera's password is encrypted and never shown again, not even to
+  your teammates or the AI assistant. The field shows **Saved (blank keeps it)**: leave it blank to
+  keep the saved password.
+- **Dynamic DNS.** If your camera uses a dynamic DNS name and its address changes, open the camera
+  and click **Save camera** again so Streamloop picks up the new address.
+- **When the camera drops**, the layer follows its **If it drops** setting, such as a "Camera
+  reconnecting" slate. See [Live inputs](/scenes/live-inputs#when-a-feed-drops).

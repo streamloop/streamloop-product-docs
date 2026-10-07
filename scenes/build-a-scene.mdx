@@ -1,0 +1,93 @@
+---
+title: "Build a scene"
+sidebarTitle: "Build a scene"
+description: "Lay out a live show in the Streamloop studio: start from a layout or the AI assistant, add sources and layers, publish, and go live."
+keywords:
+  ["streamloop studio", "design live stream layout", "stream overlay editor", "publish live scene"]
+icon: "pencil-ruler"
+---
+
+<Info>
+  Scenes are in private beta. See [Scenes](/scenes/overview) to request access.
+</Info>
+
+The studio is where you design a scene loop's show. It opens when you create a scene loop, or when
+you click **Open studio** on a loop's **Scene** tab.
+
+## Start your show
+
+A new, empty show opens on a large prompt. You have two ways to start:
+
+- **Describe the show** to the [AI assistant](/scenes/ai-assistant). You can attach, drop or paste
+  references such as pictures, logos, a brand sheet or data files.
+- **Or start from scratch**: click **Choose a layout** or **Blank scene**.
+
+The starter layouts are:
+
+| Layout | What it is |
+| --- | --- |
+| Full camera | One live input edge to edge. |
+| Interview | Host and guest side by side, with name straps. |
+| Picture in picture | Main feed with a corner inset. |
+| Lower third | Camera with an animated name strap. |
+| Starting soon | Animated backdrop, title and countdown. |
+| Scoreboard | Teams and a live score. |
+| Headlines | A grid of cards from a data table. |
+| Be right back | Holding slide with a looping clip. |
+| Blank | An empty 1080p canvas. |
+
+## Find your way around
+
+The top bar belongs to the loop: **‹ Loop name** takes you back to the loop's page, and the
+**General**, **Scene** and **YouTube** tabs open those parts of the loop.
+
+- **Left sidebar**: **Sources & layers**, **Scripts**, **Components** and **Live** (the
+  [show control](/scenes/show-control) panel). Press `[` to fold it away.
+- **Canvas**: your scenes side by side. Drag, resize and layer things directly on it.
+- **Right panel**: **Design** (the selected layer's settings), **Code** and **Assistant**. Press
+  `]` to fold it away.
+
+## Add sources and layers
+
+A **source** is anything with picture, sound or data. A **layer** shows a source (or text, an image
+or a shape) in a scene.
+
+1. In **Sources & layers**, click **Add source** and pick a kind:
+   - **Live inputs**: [RTMP input, SRT input or HLS stream](/scenes/live-inputs), or an
+     [IP camera](/scenes/cameras).
+   - **Media**: a video playlist, a video file, or a [web page](/scenes/web-pages).
+   - **Data**: [Google Sheets, Excel or CSV, a JSON feed, web page data or a formula](/scenes/data-and-sheets).
+2. Drag the source onto a scene to show it there.
+3. Select a layer to change its size, position, style and animation in **Design**.
+
+To add another scene, click **New scene** (the + button). Each scene has its own
+**transition**: cut, fade, slide, wipe or dip.
+
+## Your changes save automatically
+
+Every change saves as you work: the top bar shows **All changes saved**. Teammates who open the same
+scene see each other's edits in real time.
+
+Saved changes are a **draft**. Nothing reaches viewers until you publish.
+
+## Publish
+
+Click **Publish** to make your draft the live version. The top bar then shows the version, for
+example **v3 · published 2 min ago**.
+
+- Before publishing, Streamloop checks the show. If something is wrong, such as a layer that shows a
+  source you deleted, the problems appear right under **Publish**. Fix them and publish again.
+- While the loop is live, publishing swaps in the new version without stopping the stream.
+- The version menu lists earlier versions. **Restore** one to publish it again as a new version.
+  Nothing is lost.
+
+## Go live
+
+**Go live** starts the loop. It stays disabled until you've published the scene once, because the
+stream always shows the published version. You can also start, stop and schedule the loop from its
+page, like any other loop.
+
+## Remove a scene
+
+To turn a scene loop back into a video loop, stop the loop, open its **Scene** tab, and choose
+**Remove scene**. You can't add or remove a scene while the loop is live.

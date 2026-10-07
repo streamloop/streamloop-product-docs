@@ -1,0 +1,53 @@
+---
+title: "Web pages"
+sidebarTitle: "Web pages"
+description: "Show any public web page in a Streamloop scene: alerts, chats, dashboards and visualizers, with custom CSS and a transparent background."
+keywords:
+  ["web page as stream source", "browser source cloud", "stream alerts overlay", "live dashboard on youtube", "obs browser source alternative"]
+icon: "globe"
+---
+
+<Info>
+  Scenes are in private beta. See [Scenes](/scenes/overview) to request access.
+</Info>
+
+A **Web page** source puts a live web page on air, like a browser source in OBS. Use it for alerts,
+chat overlays, live dashboards, visualizers or any page with a public URL.
+
+## Add a web page
+
+<Steps>
+  <Step title="Add the source">
+    In **Sources & layers**, click **Add source** and pick **Web page**. Drag it onto a scene.
+  </Step>
+  <Step title="Enter the URL">
+    Enter the page's **URL**. It must be a public `http://` or `https://` address.
+  </Step>
+  <Step title="Adjust the look">
+    Size the layer on the canvas. The page renders at the size of the layer that shows it.
+  </Step>
+  <Step title="Publish">
+    [Publish](/scenes/build-a-scene#publish) the scene to put the page on air.
+  </Step>
+</Steps>
+
+## Settings
+
+- **Transparent**: clears the page's own background, so parts of the page with nothing on them show
+  the scene behind. Turn it on for overlays and alerts. When it's off, the page sits on white.
+- **Custom CSS**: styles added to the page as its last stylesheet, for example to hide a header or
+  change a font. Up to 60 KB.
+- **Reload**: reloads the page on air at the interval you pick. Use it for pages that don't update
+  themselves.
+- Scrollbars are always hidden.
+
+## What you see is what airs
+
+The canvas preview is a picture taken by the same renderer that plays the page on air, with your
+custom CSS. If the preview looks right, the stream looks the same.
+
+## If the page doesn't show
+
+- Check that the URL opens in a private browser window without signing in. Streamloop can only show
+  public pages.
+- Some pages take a while to draw their first picture. Give them a moment after you publish.

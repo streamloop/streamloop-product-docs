@@ -22,15 +22,20 @@ broadcast lifecycle on the user's behalf.
 
 **At a glance**
 - **Core job:** loop an uploaded video/playlist → 24/7 live RTMP stream.
-- **Quality:** up to **4K @ 60fps** (also 1080p/30, 720p/24).
-- **Destinations:** YouTube (via OAuth), plus custom RTMP — Twitch, Facebook Live, Instagram,
-  Kick, TikTok, and any RTMP platform. *(Multi-destination "multistream" and a hosted MCP
-  server are in flight — see "Verify before you document" below.)*
-- **Inputs:** MP4, MKV, AVI, MOV; optional separate audio track (music/voiceover); import from
-  Google Drive / Dropbox; playlists with custom ordering.
-- **Reliability:** automatic stream monitoring and recovery.
-- **Pricing:** pay-as-you-go **credits, no subscription**; new users get **free trial credits,
-  no card required**. Positioning: *"half the price, twice the quality."*
+- **Two loop types:** **Pre-recorded video** (up to **4K @ 60fps**, HDR) and **Scene** (a live
+  show built in the studio: live inputs, web pages, data, overlays, AI assistant; max
+  **1080p60**; **private beta**, invite only via **Request early access**).
+- **Destinations:** YouTube (managed via OAuth, or RTMP key), plus RTMP platforms in the picker:
+  Twitch, Facebook, Kick, X, TikTok, LinkedIn, **Custom RTMP**. **Multistream**: up to 5
+  destinations per loop, at most one YouTube; behind the `multistream` flag, so document it as
+  rolling out.
+- **Inputs:** MP4, MOV, MKV (1.5 GB per file free, 5 GB paid); MP3/WAV/FLAC/AAC audio; import from
+  Google Drive, YouTube or a direct link; a workspace **Library**; **Smart order** (AI-built
+  playlist order, scheduled breaks rolling out).
+- **Reliability:** automatic stream monitoring and recovery; optional YouTube **Backup stream**.
+- **Pricing:** credits, pay-as-you-go **or an optional monthly plan** ($1 7-day trial), auto-refill.
+  Extra destinations, backup stream, extra storage and scene rendering are billed on top. Eligible
+  new accounts can claim free credits (amount set by a flag; don't quote one).
 
 ## Who you're writing for (audience)
 
@@ -48,21 +53,21 @@ reader has a video file and a destination account, and little else. Explain stre
 
 ## State of this repo (read this before editing)
 
-This is the public docs site, built on **Mintlify**. **It is currently a skeleton, not real
-documentation.** `docs.json` and the navigation are Streamloop-specific, but most page bodies
-are either **empty stubs** (e.g. `features.mdx`, `get-your-stream-live.mdx`, everything under
-`platform/`) or **leftover Mintlify starter-template boilerplate** that does **not** describe
-Streamloop at all (`index.mdx`, `concepts.mdx`, `quickstart.mdx`, `settings.mdx` still talk
-about generic "workspaces / projects / CRM / dashboards / analytics / SSO"). 
+This is the public docs site, built on **Mintlify**. Every page describes the real product;
+keep it that way. Two tabs:
 
-**Your job is to replace that scaffolding with real Streamloop content.** Treat any mention of
-workspaces, CRM connectors, analytics dashboards, or scheduled reports as template residue to
-be rewritten or removed — they are not Streamloop concepts.
+- **Guides** — groups: Getting started · Video loops · Scenes (beta) · Destinations ·
+  Account & team. `use-with-ai.mdx` is a hidden placeholder until the API/MCP work settles.
+- **API reference** — hand-written pages under `api-reference/` plus the REST group, which
+  Mintlify generates from the live `https://api.streamloop.app/v1/openapi.json`.
+
+Workspaces **are** a Streamloop concept (shared loops, uploads, destinations and credit wallet,
+roles owner/admin/member).
 
 ### Layout
-- `docs.json` — site config + navigation. **Every new page must be added to a `navigation`
-  group here** or it won't appear.
-- `*.mdx` — pages (top level + `platform/` for per-destination guides).
+- `docs.json` — site config + navigation + `redirects`. **Every new page must be added to a
+  `navigation` group here** or it won't appear. Renamed a page? Add a redirect.
+- `*.mdx` — pages: top level, `platform/` for destinations, `scenes/` for scene loops.
 - `images/`, `logo/` — assets. `style.css` — custom styling.
 - `AGENTS.md` — Mintlify basics + style preferences.
 - Drafts: `drafts/` and `*.draft.mdx` are git/mint-ignored — use them for work-in-progress.
@@ -83,13 +88,13 @@ and **what's actually shipped**. Use it for screenshots, exact UI wording, and t
 You're authenticated (`gh auth status`) with `repo` scope. Read code, issues, and PRs directly
 — **don't clone unless you need to.**
 
-- **`streamloop/next-frontend`** — the user-facing app (Next.js + shadcn, TypeScript).
+- **`streamloop/next-frontend`** (branch `codex/wip-refactor-to-vinext`) — the user-facing app.
   Ground truth for **UI flows, button/label text, and what a screen actually does**. Useful paths:
-  - `src/app/(public)` and `src/app/(dashboard)` — public vs. signed-in routes
-  - `src/components/stream-create`, `stream-edit`, `stream-list`, `streams` — the core stream UX
-  - `src/components/upload-file.tsx`, `external-upload.tsx` (Drive/Dropbox), `free-credits-claim.tsx`,
-    `landing-page/` — onboarding & marketing copy
-  - `messages/` — i18n strings (canonical UI wording)
+  - `apps/dashboard/src/components/` — `stream-create`, `stream-edit` (incl. `scene/`,
+    `order-sequencer/`), `stream-list`, `library`, `onboarding`, `fragments/` (billing, workspaces)
+  - `apps/dashboard/src/features/stream-edit/destination-picker/` — destinations and multistream
+  - `apps/public/` — the marketing site, `llms.txt`, `pricing.md`
+  - `packages/shared/src/locales/dashboard/en.po` — i18n strings (canonical UI wording)
 - **`streamloop/streamloop-services`** — the Go backend. Ground truth for **how features
   actually behave** (encoding, scheduling, credits/billing, YouTube lifecycle, RTMP, playlists).
   Start here, don't read the whole tree:
@@ -103,6 +108,13 @@ You're authenticated (`gh auth status`) with `repo` scope. Read code, issues, an
   gh api repos/streamloop/streamloop-services/contents/docs/project-map.md --jq '.content' | base64 -d
   gh api repos/streamloop/streamloop-services/contents/docs --jq '.[].name'
   ```
+
+- **`streamloop/live-scene`** — the scene studio and runtime. User vocabulary is the "14 words"
+  in `docs/01-glossary.md` (Show, Scene, Layer, Source, Table, Control, Publish…); everything
+  else there is engineering-only. `docs/41-scene-api.md` (inputs, cameras, secrets, web pages),
+  `docs/43` §3/§5 (studio UX), `studio/src/ui/**` for exact studio labels.
+- Dashboard UI strings: `packages/shared/src/locales/dashboard/en.po` in `next-frontend`
+  (branch `codex/wip-refactor-to-vinext`). Quote labels exactly, in **bold**.
 
 ### 3. Issues & PRs — for what's new, changing, or not-yet-shipped
 Features move fast and some ship behind flags. Check before documenting:
@@ -145,7 +157,7 @@ a `{/* TODO: verify */}` rather than guessing.
    ```
    `title` + `description` are also the SEO/OG tags Mintlify emits — write them deliberately.
 3. **Register it in `docs.json`.** Add the page path to the right `navigation.groups` entry
-   (Platform / Setting up your 24/7 stream / Destinations / Integrations / Resources).
+   (Getting started / Video loops / Scenes (beta) / Destinations / Account & team).
 4. **Draft with Mintlify components, not raw HTML.** Use `<Steps>` for procedures, `<Card>`/
    `<Columns>` for landing/index pages, `<Tabs>` for per-platform variants, `<Accordion>` for
    FAQs, `<Note>/<Warning>/<Info>/<Tip>` for callouts, `<Frame>` for screenshots. Ask the

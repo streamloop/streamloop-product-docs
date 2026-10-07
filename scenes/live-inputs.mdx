@@ -1,0 +1,99 @@
+---
+title: "Live inputs"
+sidebarTitle: "Live inputs"
+description: "Send a live feed from OBS, vMix or a hardware encoder into a Streamloop scene over RTMP, RTMPS or SRT, or pull an HLS stream, with a fallback slate when the feed drops."
+keywords:
+  ["rtmp input", "srt input", "obs to cloud", "send obs to streamloop", "live input fallback slate", "hls input"]
+icon: "radio-tower"
+---
+
+<Info>
+  Scenes are in private beta. See [Scenes](/scenes/overview) to request access.
+</Info>
+
+A **live input** brings a live feed into your show. Your encoder (OBS, vMix or a hardware encoder)
+pushes video to Streamloop, and the scene shows it like any other layer.
+
+| Kind | Use it for |
+| --- | --- |
+| **RTMP input** | OBS, vMix or a hardware encoder pushes to a server URL and a stream key. RTMPS gives an encrypted link. |
+| **SRT input** | A low-latency push over SRT. Good on unstable networks. |
+| **HLS stream** | Pull a live stream from an `.m3u8` URL. |
+| **IP camera** | Pull a camera's RTSP feed from the internet. See [Cameras](/scenes/cameras). |
+
+## Add an RTMP or SRT input
+
+<Steps>
+  <Step title="Add the source">
+    In the studio's **Sources & layers**, click **Add source** and pick **RTMP input** or **SRT
+    input**. Drag it onto a scene.
+  </Step>
+  <Step title="Create a stream key">
+    Open the source's settings and click **Create stream key**. Streamloop shows the **Server URL**,
+    **Server URL (RTMPS)** and **Stream key**, or for SRT, the **SRT URL**.
+  </Step>
+  <Step title="Copy it now">
+    Copy the key or SRT URL right away. **It's shown only once** and isn't kept in the show. If you
+    lose it, create a new key.
+  </Step>
+  <Step title="Set up your encoder">
+    Paste the details into your encoder (see below) and start streaming from it.
+  </Step>
+  <Step title="Publish">
+    [Publish](/scenes/build-a-scene#publish) the scene. A new key reaches the stream when you publish.
+  </Step>
+</Steps>
+
+### Encoder settings
+
+<Tabs>
+  <Tab title="RTMP">
+    - **OBS**: Settings → Stream → Service **Custom**. Paste the **Server URL** (use the RTMPS one for
+      an encrypted link) as Server, and the stream key as Stream Key.
+    - **vMix**: Add Destination → Custom RTMP Server, with the same URL and key.
+  </Tab>
+  <Tab title="SRT">
+    - **OBS**: Settings → Stream → Service **Custom**. Paste the **SRT URL** as Server and leave
+      Stream Key empty.
+    - **vMix and hardware encoders**: use caller mode to the host and port in the SRT URL, with the
+      **Stream ID** shown, and set the packet size to **1128**. At the usual 1316 the encoder
+      connects but no picture arrives.
+  </Tab>
+</Tabs>
+
+## Replace a key
+
+Click **New key (the old one stops working)** to issue a new key. The old key stops working, so
+update your encoder and publish. Use this if a key leaks.
+
+## Input status
+
+Each input shows its status in the studio:
+
+| Status | Meaning |
+| --- | --- |
+| **Live** | Your encoder is sending. |
+| **Waiting** | No feed is arriving yet. |
+| **Down** | The feed was lost. |
+| **Key revoked** | The key was replaced. Paste the new key into your encoder. |
+| **Idle** | The input isn't in a scene that's on air or cued, so it isn't running. |
+| **Can't start** | A setting it needs is missing. Open the source to see which. |
+
+## When a feed drops
+
+Every live input has an **If it drops** setting that decides what viewers see while the feed is
+gone:
+
+- **Show a slate**: a holding card with your text, such as "Stream starting soon". This is the
+  default.
+- **Hide the layer**: viewers see what's behind the layer until the signal returns.
+- **Switch to** another source, such as a looping clip.
+
+Streamloop waits a few seconds before switching, so brief drops don't flash the fallback on air. When
+the feed comes back, the input returns on its own.
+
+## Good to know
+
+- Guest cameras (people joining from a browser) aren't available yet. Use an RTMP or SRT input, or
+  an IP camera.
+- The scene stream keeps running when an input drops. Only that layer falls back.

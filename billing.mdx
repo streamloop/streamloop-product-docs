@@ -1,126 +1,163 @@
 ---
 title: "How billing works"
 sidebarTitle: "Billing"
-description: "Streamloop is pay-as-you-go — you buy credits and spend them only while a stream is live. No subscription, credits never expire, and free credits to start."
+description: "Streamloop runs on credits you spend only while a stream is live. Pay as you go or choose an optional monthly plan. See the price per resolution, extra destinations, scenes and storage."
 keywords:
-  ["streamloop pricing", "24/7 stream cost", "pay as you go live stream", "how much to stream 24/7", "live stream credits"]
+  ["streamloop pricing", "24/7 stream cost", "pay as you go live stream", "how much to stream 24/7", "live stream credits", "multistream price"]
 icon: "credit-card"
 ---
 
-Streamloop is **pay-as-you-go**. You buy credits, and you spend them only while a stream is live.
-There's no subscription and no monthly commitment, and your credits never expire. New accounts
-start with free credits, so you can run a real stream before paying anything.
+Streamloop runs on **credits**. You spend them only while a stream is live, and they never expire.
+Buy credits as you go, or choose an optional monthly plan that adds credits every month. Credits
+belong to your [workspace](/workspaces-and-team), so everyone in it streams from the same balance.
 
 ## What you pay for
 
-You pay for two things, both metered so you only pay for what you use:
+All charges are metered, so you pay only for what you use:
 
-1. **Streaming time** — the time your stream is on air. This is the main cost.
-2. **Video preparation** — a one-time fee of about **\$0.005 per minute of encoding time** to convert each video into a stream-ready format.
+1. **Streaming time**: the time your loop is on air. This is the main cost.
+2. **Video preparation**: a one-time fee of about **\$0.005 per minute of encoding time** to
+   convert each video into a stream-ready format. You're charged only when the conversion succeeds.
+3. **Options you turn on**: extra destinations, a backup stream, extra storage and scene rendering.
+   Each is described below.
 
 ### Streaming time
 
-The streaming rate depends on two things you set per stream: **resolution** and **frame rate**. A
-higher-quality, higher-frame-rate stream costs more; a lower one costs less. Billing is metered by
-the minute while you're live, so you only pay for the minutes you actually stream.
+The rate depends on the **resolution** and **frame rate** of the loop. You're billed by the minute
+while you're live. The figures below are the cost of a stream running **nonstop for 30 days**:
 
-The figures below are the cost of a stream running **nonstop for 30 days**:
+| Resolution  | 24 fps   | 25 fps   | 30 fps   | 60 fps   |
+| ----------- | -------- | -------- | -------- | -------- |
+| 720p        | \$4.00   | \$4.17   | \$5.00   | \$7.50   |
+| 1080p       | \$8.00   | \$8.33   | \$10.00  | \$15.00  |
+| 1440p       | \$16.00  | \$16.67  | \$20.00  | \$30.00  |
+| 4K (2160p)  | \$24.00  | \$25.00  | \$30.00  | \$45.00  |
 
-| Resolution  | 24 fps   | 25 fps   | 30 fps   | 60 fps    |
-| ----------- | -------- | -------- | -------- | --------- |
-| 720p        | \$4.02    | \$4.19    | \$5.01    | \$7.52     |
-| 1080p       | \$7.99    | \$8.34    | \$9.98    | \$14.99    |
-| 1440p       | \$15.98   | \$16.68   | \$20.00   | \$29.98    |
-| 4K (2160p)  | \$23.98   | \$24.97   | \$29.98   | \$45.01    |
+A stream you run for a week costs about a quarter of these figures, and one you run for a day about
+a thirtieth. For example, 1080p at 30fps costs about **\$0.0139 per hour**, so about \$0.33 for a
+day.
 
-<Note>
-  You're billed by the minute, so a stream you run for a week costs about a quarter of these
-  figures, and one you run for a day about a thirtieth. See the
-  [pricing page](https://streamloop.app/#pricing) for exact current rates.
-</Note>
+<Accordion title="Exact hourly rates in credits">
+  **\$1 = 1,000,000 credits.** Each hour live costs the rate below. Monthly figures are 720 hours
+  (30 days).
 
-For example, a 1080p stream at 30fps costs about **\$0.0139 per hour** — roughly \$2.33 for a week,
-or \$9.98 for a full 30 days of nonstop streaming.
+  | Resolution | 24 fps | 25 fps | 30 fps | 60 fps |
+  | ---------- | ------ | ------ | ------ | ------ |
+  | 720p       | 5,556  | 5,792  | 6,944  | 10,417 |
+  | 1080p      | 11,111 | 11,569 | 13,889 | 20,833 |
+  | 1440p      | 22,222 | 23,153 | 27,778 | 41,667 |
+  | 4K (2160p) | 33,333 | 34,722 | 41,667 | 62,500 |
 
-<Accordion title="Exact per-minute rates">
-  Streaming is metered in **credits**, where **\$1 = 1,000,000 credits**. Each minute you're live
-  costs the rate below for your resolution and frame rate. Monthly figures assume 30 days
-  (43,200 minutes) of continuous streaming.
-
-  | Resolution | Frame rate | Credits / min | ≈ \$ / hour | ≈ \$ / month |
-  | ---------- | ---------- | ------------- | ---------- | ----------- |
-  | 720p       | 24 fps     | 93            | \$0.0056    | \$4.02       |
-  | 720p       | 25 fps     | 97            | \$0.0058    | \$4.19       |
-  | 720p       | 30 fps     | 116           | \$0.0070    | \$5.01       |
-  | 720p       | 60 fps     | 174           | \$0.0104    | \$7.52       |
-  | 1080p      | 24 fps     | 185           | \$0.0111    | \$7.99       |
-  | 1080p      | 25 fps     | 193           | \$0.0116    | \$8.34       |
-  | 1080p      | 30 fps     | 231           | \$0.0139    | \$9.98       |
-  | 1080p      | 60 fps     | 347           | \$0.0208    | \$14.99      |
-  | 1440p      | 24 fps     | 370           | \$0.0222    | \$15.98      |
-  | 1440p      | 25 fps     | 386           | \$0.0232    | \$16.68      |
-  | 1440p      | 30 fps     | 463           | \$0.0278    | \$20.00      |
-  | 1440p      | 60 fps     | 694           | \$0.0416    | \$29.98      |
-  | 4K (2160p) | 24 fps     | 555           | \$0.0333    | \$23.98      |
-  | 4K (2160p) | 25 fps     | 578           | \$0.0347    | \$24.97      |
-  | 4K (2160p) | 30 fps     | 694           | \$0.0416    | \$29.98      |
-  | 4K (2160p) | 60 fps     | 1042          | \$0.0625    | \$45.01      |
-
-  Video preparation (encoding) is billed separately at **5,000 credits (\$0.005) per minute of
-  encoding time**, charged once when the conversion succeeds.
+  Video preparation is **5,000 credits (\$0.005) per minute of encoding time**.
 </Accordion>
 
-### Video preparation
+### Extra destinations
 
-Before a video can loop 24/7, Streamloop converts (encodes) it once into a stream-ready format.
-This is a one-time charge of about **\$0.005 per minute of encoding time** — you're only charged
-when the conversion finishes successfully.
+A loop can stream to [up to 5 destinations](/platform/multistream). The first is included. Each
+extra destination that's turned on adds a flat fee, by resolution:
+
+| Resolution | Per extra destination, per 30 days |
+| ---------- | ---------------------------------- |
+| 720p       | \$3.50                             |
+| 1080p      | \$6.00                             |
+| 1440p      | \$8.00                             |
+| 4K (2160p) | \$12.50                            |
+
+Like streaming time, it's charged only while the loop is live.
+
+### Backup stream
+
+On a YouTube destination you can turn on **Backup stream**. Streamloop then publishes to YouTube's
+primary and backup ingest at the same time. This **doubles your streaming cost** while live.
+
+### Extra storage
+
+Every loop includes storage for playlists up to **10 GiB**. A bigger playlist needs **Extra
+storage**, which you turn on in the loop's **General** tab, under **Storage**. Only the part above
+10 GiB is charged, at **\$0.50 per GiB-month**, and only while the loop is live. The change applies
+the next time the stream starts.
+
+<Note>
+  Extra storage is rolling out. If your loop has no **Storage** section, it isn't available in your
+  workspace yet.
+</Note>
+
+### Scenes
+
+[Scene loops](/scenes/overview) pay the normal streaming rate plus a **scene rendering** charge.
+During the beta, scene rendering costs 30% less than the launch price. At the default beta price, a
+1080p 30fps scene loop costs **\$20 for 30 days**: \$10 of streaming plus \$10 of scene rendering.
+
+| Scene rendering, per 30 days | 24 fps | 30 fps | 60 fps  |
+| ---------------------------- | ------ | ------ | ------- |
+| 720p                         | \$3.56 | \$4.44 | \$8.89  |
+| 1080p                        | \$8.00 | \$10.00 | \$20.00 |
+
+Scenes stream at up to 1080p60. The dashboard shows your exact price when you create a scene loop.
 
 ## What's free
 
 <Columns cols={2}>
-  <Card title="Uploads and storage" icon="hard-drive">
-    Uploading your videos and keeping them on Streamloop is free — you pay to stream them, not to
-    store them.
-  </Card>
   <Card title="Idle loops" icon="pause">
-    A loop that isn't live costs nothing. Set up as many as you like and pay only when one is
+    A loop that isn't live costs nothing. Set up as many as you like and pay only while one is
     streaming.
+  </Card>
+  <Card title="Your uploads" icon="hard-drive">
+    Keeping files in your [library](/library) is free. Uploads that aren't in any playlist are
+    removed after 14 days.
   </Card>
 </Columns>
 
-## Free trial credits
+## Free credits
 
-New accounts get **free credits** — enough to run a real stream for a few hours — with **no card
-required**. Use them to test your setup, your destination, and the quality before you spend
-anything.
+Eligible new accounts can claim **free credits** with **no card required**. Use them to test your
+setup, your destination and the quality before you spend anything. Free credits aren't refundable.
 
-## Topping up
+## Ways to pay
 
-When you're ready, add credits from your billing settings:
+### Monthly plan (optional)
 
-- **Top up from \$5.** Unused credits stay on your account and never expire.
-- **Pay by card** (processed by Stripe) **or with crypto** — USDT, USDC, Bitcoin, Ethereum, and
-  Solana, across all major coins and networks.
+A monthly plan adds a fixed amount of credits to your balance every month, at a better rate than
+topping up. You can pick one during onboarding or from **Billing**.
+
+- **\$1 trial**: a \$1 card charge saves your card and starts a 7-day trial. The \$1 is added to
+  your balance as credits. Cancel during the trial and you pay nothing more.
+- After the trial, your card is charged monthly and the full amount lands in your balance as
+  credits.
+- Cancel any time from **Billing**. Unused credits stay yours.
+
+### Top up as you go
+
+- Top up from **\$5** to **\$10,000** at a time.
+- Pay by card (through Stripe or Keepz) or with crypto (USDC, ETH, BTC and more).
+- Larger top-ups get bonus credit: **+3%** on \$250 or more, **+5%** on \$500 or more, and **+2%
+  extra** when you pay with crypto.
+
+### Auto-refill
+
+**Auto-refill** tops up from your default card whenever your balance falls below an amount you set,
+so loops never stop mid-stream. It isn't available while a monthly plan is active, because the plan
+already adds credits every month.
 
 ## If you run low or out of credits
 
-- **Starting a stream** checks your balance first. If you don't have enough credits to run the
-  stream you've set up, Streamloop won't start it until you top up.
-- **While you're live**, credits drain by the minute. If your balance runs out mid-stream, the
-  stream **stops automatically**, so you're never charged beyond what you've bought. Your videos
-  and settings stay put — top up and start again whenever you like.
+- **Starting a stream** checks your balance first. If you don't have enough credits for the loop
+  you've set up, it won't start until you top up.
+- **While you're live**, credits drain by the minute. If your balance runs out, your loops **stop
+  automatically**, so you're never charged beyond what you've bought. Your videos and settings stay
+  put. Top up and start again whenever you like.
 
 <Tip>
-  Your billing dashboard shows your current hourly rate, a monthly estimate, and how long your
-  balance will last at your current usage — so you can top up before a 24/7 stream runs dry.
+  A loop's **Costs** panel shows its hourly rate and a monthly estimate, including extra
+  destinations and storage, so you can top up before a 24/7 stream runs dry.
 </Tip>
 
-## Refunds
+## Invoices and refunds
 
-You can request a refund on **unused credits from a purchase** from the matching invoice in your
-billing settings. Free trial credits aren't refundable, and a refund is capped at the credits you
-have left. Approved refunds go back to your original payment method.
+- Download each invoice as a PDF from **Billing**. Add a company name, tax ID and address under
+  billing details, and they appear on your invoices, including past ones.
+- You can request a refund on **unused credits from a purchase** from the matching invoice. A
+  refund is capped at the credits you have left, and it goes back to your original payment method.
 
 ## FAQ
 
@@ -128,24 +165,19 @@ have left. Approved refunds go back to your original payment method.
   <Accordion title="Do credits expire?">
     No. Credits stay on your account until you use them.
   </Accordion>
-  <Accordion title="Is there a subscription?">
-    No. Streamloop is entirely pay-as-you-go — you pay only for the credits you buy and the
-    streaming time you use.
-  </Accordion>
-  <Accordion title="Is there any cost besides streaming time?">
-    Just one: converting each video into a stream-ready format costs about \$0.005 per minute of
-    encoding time. Uploads, storage, and loops that aren't live are all free.
+  <Accordion title="Do I need a subscription?">
+    No. The monthly plan is optional. You can top up only when you need credits.
   </Accordion>
   <Accordion title="How much does a month of 24/7 streaming cost?">
-    Roughly \$4 (720p), \$8 (1080p), \$16 (1440p), or \$24 (4K) per 30 days at 24fps. Higher frame
-    rates cost more, and you pay by the minute, so shorter runs cost proportionally less.
+    About \$4 (720p), \$8 (1080p), \$16 (1440p) or \$24 (4K) per 30 days at 24fps, for one
+    destination. Higher frame rates, extra destinations, a backup stream and scenes cost more.
   </Accordion>
   <Accordion title="What happens if I run out of credits mid-stream?">
-    The stream stops automatically. Nothing else is affected — your videos and settings remain,
-    and you can restart once you top up.
+    Your loops stop automatically. Nothing else is affected: your videos and settings remain, and
+    you can restart once you top up.
   </Accordion>
 </AccordionGroup>
 
 <Note>
-  Ready to start? New accounts get free credits — [try it on streamloop.app](https://streamloop.app).
+  Ready to start? [Try it on streamloop.app](https://streamloop.app).
 </Note>
