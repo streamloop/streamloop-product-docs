@@ -78,6 +78,8 @@ Send `nextCursor` back as `cursor` for the next page. When `hasMore` is `false`,
 
 Send an `Idempotency-Key` header (any unique string, for example a UUID) on `POST` and `PATCH` requests. If you repeat a request with the same key within 24 hours, you get the original response again, with `Idempotency-Replayed: true`, and nothing runs twice. Server errors (`5xx`) aren't stored, so a retry after one runs again.
 
+A key belongs to one request. If you reuse a key with a different body, the API refuses it with `422 IDEMPOTENCY_KEY_REUSED` and doesn't run the request. Use a new key for each new request, and the same key only to retry.
+
 ```bash
 curl -X POST https://api.streamloop.app/v1/streams \
   -H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS" \
@@ -139,7 +141,7 @@ Some problems carry more fields, such as a `reason`, or `errors` and `currentRev
 | `403` | `FORBIDDEN`, `UNAUTHORIZED`, `INSUFFICIENT_SCOPE`, `WORKSPACE_FORBIDDEN`, `MULTISTREAM_NOT_ENABLED` |
 | `404` | `NOT_FOUND` |
 | `409` | `STREAM_LIVE`, `STREAM_ACTIVE`, `STREAM_ILLEGAL_TRANSITION`, `IMMUTABLE_WHILE_LIVE`, `NOT_LIVE`, `DESTINATION_LIMIT`, `YOUTUBE_DESTINATION_LIMIT`, `DESTINATION_DUPLICATE`, `DUPLICATE_DESTINATION`, `LAST_DESTINATION`, `MIRROR_DESTINATION_CHANGE_BLOCKED`, `IN_USE`, `UPLOAD_INCOMPLETE`, `UPLOAD_ALREADY_COMPLETED`, `STALE_DRAFT`, `CONFLICT` |
-| `422` | `BAD_USER_INPUT`, `VALIDATION`, `VALIDATION_FAILED`, `GRAPHQL_VALIDATION_FAILED`, `GRAPHQL_PARSE_FAILED`, `STREAM_GUARD_FAILED`, `DESTINATION_INCOMPATIBLE`, `SCENE_MISSING`, `SCENE_NOT_PUBLISHED`, `SCENE_ASSET_MISSING`, `SCENE_PLAYLIST_MISSING`, `SCENE_PLAYLISTS_UNSUPPORTED`, `SCENE_QUALITY_UNSUPPORTED`, `UPLOAD_REMOVED`, `UNSUPPORTED_TYPE` |
+| `422` | `BAD_USER_INPUT`, `VALIDATION`, `VALIDATION_FAILED`, `GRAPHQL_VALIDATION_FAILED`, `GRAPHQL_PARSE_FAILED`, `STREAM_GUARD_FAILED`, `DESTINATION_INCOMPATIBLE`, `SCENE_MISSING`, `SCENE_NOT_PUBLISHED`, `SCENE_ASSET_MISSING`, `SCENE_PLAYLIST_MISSING`, `SCENE_PLAYLISTS_UNSUPPORTED`, `SCENE_QUALITY_UNSUPPORTED`, `UPLOAD_REMOVED`, `UNSUPPORTED_TYPE`, `INVALID_INPUT`, `FILE_TOO_LARGE`, `IDEMPOTENCY_KEY_REUSED` |
 | `429` | `RATE_LIMITED` |
 | `500` | `INTERNAL`, `INTERNAL_SERVER_ERROR` |
 | `503` | `FAILED` |
