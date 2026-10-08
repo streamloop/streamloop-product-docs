@@ -206,7 +206,7 @@ Errors are [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) problem documents 
 | 412 | `PRECONDITION_FAILED` (with `currentRevision`); a stale `If-Match` on `publish`, `discard`, `revert` or `DELETE /v1/scenes/{id}` keeps its code (`STALE_PUBLISH`, `CONFLICT`) with this status. A header and a body precondition that disagree are `422 INVALID_INPUT` |
 | 413 | `TOO_LARGE` |
 | 415 | `UNSUPPORTED_MEDIA_TYPE`: a body that is neither JSON nor code, or code sent as the wrong kind for its path |
-| 422 | `INVALID_INPUT` (a field, value or query parameter that doesn't fit; `detail` names it), `CHECK_FAILED`, `SCENE_INVALID` (with `errors`), `IDEMPOTENCY_KEY_REUSED`, `CAMERA_INVALID`, `SECRET_MISSING` |
+| 422 | `INVALID_INPUT` (a field, value or query parameter that doesn't fit; `detail` names it), `READ_ONLY` (a field or sub-path that can't be changed that way — a layer's type, children or repeat, a table's rows), `CHECK_FAILED`, `SCENE_INVALID` (with `errors`), `IDEMPOTENCY_KEY_REUSED`, `CAMERA_INVALID`, `SECRET_MISSING` |
 | 429 | `RATE_LIMITED` |
 | 5xx | `INTERNAL`, `UNAVAILABLE`, `SCENE_TIMEOUT`: retry with backoff |
 
