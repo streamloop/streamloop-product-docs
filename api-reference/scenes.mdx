@@ -203,7 +203,7 @@ Errors are [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) problem documents 
 | 403 | `INSUFFICIENT_SCOPE`, `WORKSPACE_FORBIDDEN` |
 | 404 | `NOT_FOUND` |
 | 409 | `CONFLICT` (with `currentRevision`), `EDIT_NO_MATCH`, `EDIT_AMBIGUOUS`, `IN_USE`, `CONFIRM_REQUIRED`, `STALE_PUBLISH` (with `publishedVersion`, `basedOn`, `reverted`), `DRAFT_NOT_SAVED`, `NOT_PUBLISHED`, `SCENE_IN_USE`, `SCENE_OFFLINE`, `INGEST_KEY_REVOKED` |
-| 412 | `PRECONDITION_FAILED` (with `currentRevision`); a stale `If-Match` on `discard` or `revert` keeps its code (`CONFLICT`, `STALE_PUBLISH`) with this status |
+| 412 | `PRECONDITION_FAILED` (with `currentRevision`); a stale `If-Match` on `publish`, `discard`, `revert` or `DELETE /v1/scenes/{id}` keeps its code (`STALE_PUBLISH`, `CONFLICT`) with this status. A header and a body precondition that disagree are `422 INVALID_INPUT` |
 | 413 | `TOO_LARGE` |
 | 415 | `UNSUPPORTED_MEDIA_TYPE`: a body that is neither JSON nor code, or code sent as the wrong kind for its path |
 | 422 | `INVALID_INPUT` (a field, value or query parameter that doesn't fit; `detail` names it), `CHECK_FAILED`, `SCENE_INVALID` (with `errors`), `IDEMPOTENCY_KEY_REUSED`, `CAMERA_INVALID`, `SECRET_MISSING` |
