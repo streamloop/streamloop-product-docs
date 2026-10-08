@@ -9,7 +9,7 @@ The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake
 
 - **Scope** is the OAuth scope the tool needs. `write` includes `read`, and `destructive` includes both.
 - **Destructive** matches each tool's `destructiveHint` annotation: the tool can't be undone or changes what viewers see. **Yes, confirm** tools are irreversible: they need `confirm: true`, or they answer `Error [CONFIRM_REQUIRED]`, say exactly what would go, and change nothing.
-- Every tool publishes an `outputSchema` (the shape it answers), and every error also answers `structuredContent` `{ code, detail, … }`. See [Errors](/api-reference/mcp/overview#errors).
+- Every scene, stream, playlist and smart order tool publishes an `outputSchema`, and so do `list_destinations`, `list_uploads`, `get_upload` and `get_connection_hints`. Each is the shape the tool answers **or** an error's `{ code, detail, … }` (`anyOf`), so a client that validates results still gets each refusal as the tool's error. These 16 publish none (read their answer's JSON): `get_account`, `list_workspaces`, `get_selected_workspace`, `select_workspace`, `create_rtmp_destination`, `start_youtube_connection`, `list_youtube_channels`, `create_youtube_destination`, `update_destination`, `create_upload`, `complete_upload`, `discover_external_media`, `import_upload_from_url`, `delete_upload`, `get_billing_overview`, `get_streaming_usage`. Every error answers `structuredContent` `{ code, detail, … }`. See [Errors](/api-reference/mcp/overview#errors).
 
 ## Account and workspaces
 
@@ -26,7 +26,7 @@ The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake
 | --- | --- | --- | --- |
 | `list_streams` | Finds streams and their ids, with state and schedule. Filters by name and status. | `read` | |
 | `get_stream` | One stream's full configuration: state, quality, framerate, destinations and schedule. | `read` | |
-| `create_stream` | Creates a new loop, with an empty video playlist and an empty audio playlist. | `write` | |
+| `create_stream` | Creates a new stream, with an empty video playlist and an empty audio playlist. It starts once it has a destination plus either a video playlist with items or a published scene (`set_stream_scene`). | `write` | |
 | `update_stream` | Changes a stream's settings (name, quality, framerate, duration, storage, backup stream) and its YouTube broadcast settings. | `write` | |
 | `check_stream_readiness` | Says whether `start_stream` would work right now, and lists every blocking issue. Changes nothing. | `read` | |
 | `start_stream` | Starts streaming now. Puts video in front of the public. | `write` | |
@@ -36,7 +36,7 @@ The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake
 | `get_stream_live_stats` | How a live stream is doing on a connected YouTube channel: watch URL, status, viewers, views, likes. | `read` | |
 | `list_stream_destinations` | Where a stream publishes, whether each destination is enabled, and its delivery state while live. | `read` | |
 | `add_stream_destination` | Adds a destination to a stream. Up to 5, at most one YouTube channel; a second one needs [multistream](/platform/multistream) (rolling out). | `write` | |
-| `set_stream_destination_enabled` | Turns one destination off or back on without removing it. Turning off works while live. | `write` | |
+| `set_stream_destination_enabled` | Turns one destination off or back on without removing it. Turning off works while live, and takes that output off the air at once. | `write` | Yes |
 | `remove_stream_destination` | Takes a destination off a stream. Refused while live: turn it off instead. | `write` | |
 | `delete_stream` | Deletes a stream, its playlists and its schedule. Uploads stay. | `destructive` | Yes, confirm |
 
@@ -85,7 +85,7 @@ The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake
 | `get_playlist_order` | One order, and whether it can run over a given playlist. | `read` | |
 | `create_playlist_order` | Writes and checks an order from a description. Doesn't apply it. | `write` | |
 | `refine_playlist_order` | Changes an order with a follow-up instruction, as a new version. | `write` | |
-| `assign_playlist_order` | Makes a playlist play in an order. A live stream picks it up for its next items. | `write` | |
+| `assign_playlist_order` | Makes a playlist play in an order. A live stream picks it up for its next items. | `write` | Yes |
 | `unassign_playlist_order` | Returns a playlist to its own order. The saved order is kept. | `write` | |
 
 ## Credits and usage
@@ -119,7 +119,7 @@ The four `scene_*` tools read and change a scene's draft by path. See [Scenes](/
 | `delete_scene` | Deletes a scene and all its versions. Refused while a stream plays it. Without `confirm` it names the scene, its versions and the streams that play it. | `destructive` | Yes, confirm |
 | `set_stream_scene` | Makes a stopped stream play a scene's published version, or go back to its playlist. | `write` | |
 | `get_scene_state` | What each stream playing the scene has on air: the frame (`frame`), the next one (`next`), controls and sources. | `read` | |
-| `control_scene` | Acts on air: takes a frame to air with a transition (`goFrame`), cues the next (`next`), sets a control, replaces a table's rows, skips a track. | `write` | Yes |
+| `control_scene` | Acts on air: takes a frame to air with a transition (`goFrame`), cues the next (`next`), sets a control, replaces a table's rows, skips a track. Send an `actionId` (a new uuid per action) to retry safely after `SCENE_TIMEOUT`: the same `actionId` applies at most once. | `write` | Yes |
 | `list_scene_inputs` | The scene's ingest keys (never the key itself), secret names and IP cameras. | `read` | |
 | `create_scene_ingest_key` | Gets the RTMP, RTMPS and SRT addresses and key for an encoder such as OBS. The key is shown once. | `write` | |
 | `revoke_scene_ingest_key` | Revokes an ingest key. The encoder using it is cut off at once. | `destructive` | Yes, confirm |
