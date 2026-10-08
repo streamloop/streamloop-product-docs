@@ -17,6 +17,16 @@ https://api.streamloop.app/v1
 
 The version (`v1`) is in the path. We add fields and endpoints without changing the version. A breaking change would ship under a new version path, so your integration keeps working.
 
+### Deprecation and sunset
+
+Nothing in `v1` is retiring today. When something does, this is how you hear about it, at least 90 days before it stops:
+
+- **REST:** every answer of a retiring route carries `Deprecation: @<unix seconds>` (when it was marked, [RFC 9745](https://www.rfc-editor.org/rfc/rfc9745)), `Sunset: <HTTP date>` (when it stops, [RFC 8594](https://www.rfc-editor.org/rfc/rfc8594)) and `Link: <this section>; rel="deprecation"`, and the route is marked `deprecated` in [`/v1/openapi.json`](https://api.streamloop.app/v1/openapi.json) with what replaces it in its description.
+- **GraphQL:** a retiring field or argument is marked `@deprecated(reason: "…")` in the schema, with what replaces it; introspection shows it.
+- **This page** lists what is retiring and when.
+
+A retired route answers `410` with code `GONE` after its sunset date. A whole version (`/v1`) would get the same notice, a year rather than 90 days.
+
 ## Requests and responses
 
 Requests and responses are JSON (`Content-Type: application/json`). Send a JSON body on `POST`, `PATCH` and `PUT`, and query parameters on `GET`. The Scenes API also takes code as the body (`text/jsx`, `text/tsx`, `text/typescript`) and answers pictures as `image/png`.
@@ -97,8 +107,16 @@ Each caller can make **600 requests a minute**. Every response carries the curre
 | `RateLimit-Limit` | Requests allowed per window |
 | `RateLimit-Remaining` | Requests left in this window |
 | `RateLimit-Reset` | Seconds until the window resets |
+| `RateLimit` | The same three as one field: `limit=600, remaining=599, reset=1` (the current [IETF draft](https://datatracker.ietf.org/doc/draft-ietf-httpapi-ratelimit-headers/)) |
+| `RateLimit-Policy` | The quota and its window: `600;w=60` |
 
 Over the limit, the answer is `429` with code `RATE_LIMITED` and a `Retry-After` header in seconds.
+
+The GraphQL endpoint draws on the same allowance for a call with an API key or a bearer token, with the same headers; its `429` is a GraphQL `errors` entry with `extensions.code` `RATE_LIMITED`.
+
+## Long-running requests
+
+A request whose work goes on after the answer returns `202 Accepted`: the body has the resource (its `id`), and the `Location` header is where to poll, `GET /v1/uploads/{id}` for an import from a link. When the answer is a list, `Location` is the first item's and the body has every id. Poll until the resource says it is done (`uploaded` true, or `externalSource.state.status` of `COMPLETED` or `FAILED`).
 
 ## Concurrency
 
@@ -109,7 +127,7 @@ Some edits take the version you read, so you never overwrite a newer change:
 
 ## Errors
 
-Successful requests return `2xx`. Errors return the matching HTTP status and an [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) problem document (`Content-Type: application/problem+json`):
+Successful requests return `2xx`. Errors return the matching HTTP status and an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem document (the successor of RFC 7807, same shape) (`Content-Type: application/problem+json`):
 
 ```json
 {
@@ -139,9 +157,11 @@ Some problems carry more fields, such as a `reason`, or `errors` and `currentRev
 | `401` | `UNAUTHENTICATED` |
 | `402` | `INSUFFICIENT_CREDITS` |
 | `403` | `FORBIDDEN`, `INSUFFICIENT_SCOPE`, `WORKSPACE_FORBIDDEN`, `MULTISTREAM_NOT_ENABLED` |
-| `404` | `NOT_FOUND` |
+| `404` | `NOT_FOUND` (a resource, or a path no route has: the routes are in `/v1/openapi.json`) |
+| `405` | `METHOD_NOT_ALLOWED` (the `Allow` header lists the route's methods) |
 | `409` | `STREAM_LIVE`, `STREAM_ILLEGAL_TRANSITION`, `IMMUTABLE_WHILE_LIVE`, `NOT_LIVE`, `DESTINATION_LIMIT`, `YOUTUBE_DESTINATION_LIMIT`, `DESTINATION_DUPLICATE`, `LAST_DESTINATION`, `MIRROR_DESTINATION_CHANGE_BLOCKED`, `IN_USE`, `UPLOAD_INCOMPLETE`, `UPLOAD_ALREADY_COMPLETED`, `STALE_DRAFT`, `CONFLICT` |
 | `422` | `INVALID_INPUT` (a request that parses but doesn't fit: a missing or unknown field, a value of the wrong type), `STREAM_GUARD_FAILED`, `DESTINATION_INCOMPATIBLE`, `SCENE_MISSING`, `SCENE_NOT_PUBLISHED`, `SCENE_ASSET_MISSING`, `SCENE_PLAYLIST_MISSING`, `SCENE_PLAYLISTS_UNSUPPORTED`, `SCENE_QUALITY_UNSUPPORTED`, `UPLOAD_REMOVED`, `UNSUPPORTED_TYPE`, `FILE_TOO_LARGE`, `IDEMPOTENCY_KEY_REUSED` |
+| `410` | `GONE` (a route past its sunset date; see [Deprecation and sunset](#deprecation-and-sunset)) |
 | `429` | `RATE_LIMITED` |
 | `500` | `INTERNAL` |
 | `502` | `UPSTREAM_ERROR` (an unexpected failure) |
