@@ -8,7 +8,8 @@ keywords: ["mcp tools", "streamloop tools", "agent tools", "tool catalog", "scen
 The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake_case`, with no prefix. Each tool's own description (what an agent reads) says when to use it and which tool comes next. This page lists them by area.
 
 - **Scope** is the OAuth scope the tool needs. `write` includes `read`, and `destructive` includes both.
-- **Destructive** tools are irreversible. They need `confirm: true`, or they answer `Error [CONFIRM_REQUIRED]` and change nothing.
+- **Destructive** matches each tool's `destructiveHint` annotation: the tool can't be undone or changes what viewers see. **Yes, confirm** tools are irreversible: they need `confirm: true`, or they answer `Error [CONFIRM_REQUIRED]`, say exactly what would go, and change nothing.
+- Every tool publishes an `outputSchema` (the shape it answers), and every error also answers `structuredContent` `{ code, detail, … }`. See [Errors](/api-reference/mcp/overview#errors).
 
 ## Account and workspaces
 
@@ -29,7 +30,7 @@ The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake
 | `update_stream` | Changes a stream's settings (name, quality, framerate, duration, storage, backup stream) and its YouTube broadcast settings. | `write` | |
 | `check_stream_readiness` | Says whether `start_stream` would work right now, and lists every blocking issue. Changes nothing. | `read` | |
 | `start_stream` | Starts streaming now. Puts video in front of the public. | `write` | |
-| `stop_stream` | Stops a live or starting stream. Nothing is deleted. Doesn't cancel a repeating schedule. | `write` | |
+| `stop_stream` | Stops a live or starting stream. Nothing is deleted. Doesn't cancel a repeating schedule. | `write` | Yes |
 | `schedule_stream` | Sets the window a stream runs in, once, daily or weekly, and arms it. | `write` | |
 | `cancel_stream_schedule` | Disarms a schedule and clears any repeat. Doesn't stop a stream that's live. | `write` | |
 | `get_stream_live_stats` | How a live stream is doing on a connected YouTube channel: watch URL, status, viewers, views, likes. | `read` | |
@@ -37,7 +38,7 @@ The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake
 | `add_stream_destination` | Adds a destination to a stream. Up to 5, at most one YouTube channel; a second one needs [multistream](/platform/multistream) (rolling out). | `write` | |
 | `set_stream_destination_enabled` | Turns one destination off or back on without removing it. Turning off works while live. | `write` | |
 | `remove_stream_destination` | Takes a destination off a stream. Refused while live: turn it off instead. | `write` | |
-| `delete_stream` | Deletes a stream, its playlists and its schedule. Uploads stay. | `destructive` | Yes |
+| `delete_stream` | Deletes a stream, its playlists and its schedule. Uploads stay. | `destructive` | Yes, confirm |
 
 ## Destinations
 
@@ -61,7 +62,7 @@ The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake
 | `complete_upload` | Step 2: call it after the bytes are uploaded, to start processing. | `write` | |
 | `discover_external_media` | Looks at a media link and lists what can be imported, with quality options. | `read` | |
 | `import_upload_from_url` | Imports chosen media from a link (a page, a direct file link, or a file attached in the chat). | `write` | |
-| `delete_upload` | Deletes a file and everything made from it. Refused while a playlist or recent stream uses it. | `destructive` | Yes |
+| `delete_upload` | Deletes a file and everything made from it. Refused while a playlist or recent stream uses it. | `destructive` | Yes, confirm |
 
 ## Playlists
 
@@ -72,7 +73,7 @@ The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake
 | `apply_playlist_operations` | Adds, removes and reorders items, or switches between sequential and shuffle, as one all-or-nothing batch. | `write` | |
 | `copy_playlist` | Copies one playlist's contents into an empty playlist of the same kind. | `write` | |
 | `create_playlist` | Creates an empty playlist owned by a scene, for one of its playlist sources. | `write` | |
-| `swap_live_playlist` | Puts an edited playlist on the air while the stream is live, without going off air. | `write` | |
+| `swap_live_playlist` | Puts an edited playlist on the air while the stream is live, without going off air. | `write` | Yes |
 
 ## Smart order
 
@@ -104,23 +105,23 @@ The four `scene_*` tools read and change a scene's draft by path. See [Scenes](/
 
 | Tool | What it does | Scope | Destructive |
 | --- | --- | --- | --- |
-| `list_scenes` | The workspace's scenes, last changed first, with the version last published. | `read` | |
+| `list_scenes` | The workspace's scenes, newest first, with the version last published. | `read` | |
 | `create_scene` | Creates a scene with an empty draft. | `write` | |
 | `rename_scene` | Renames a scene. | `write` | |
 | `scene_get` | Reads anything in the draft by path, or a published version. `as: "image"` returns a picture of a frame or layer with any problems found. | `read` | |
-| `scene_set` | Creates or changes one thing in the draft: a whole value or exact text edits. Checked as the studio checks it. | `write` | |
-| `scene_remove` | Deletes whole things from the draft, all or nothing. | `write` | |
+| `scene_set` | Creates or changes one thing in the draft: a whole value or exact text edits. Checked as the studio checks it. Changing what exists needs the `revision` you read (`"*"` on purpose), or it answers `REVISION_REQUIRED`. | `write` | |
+| `scene_remove` | Deletes whole things from the draft, all or nothing. Each path needs the revision you read (`"*"` on purpose). | `write` | Yes |
 | `scene_probe` | Fetches a URL once to show what a table would read from it. Changes nothing. | `read` | |
-| `publish_scene` | Makes the draft the next version. `dryRun` only checks; on air it needs `confirm: true`. | `write` | |
+| `publish_scene` | Publishes the draft as it was at `draftRevision` (required) as the next version. `dryRun` only checks; on air it needs `confirm: true`; `STALE_PUBLISH` when someone published since your draft's base. | `write` | Yes |
 | `list_scene_versions` | Published versions, newest first: number, when, by whom. | `read` | |
-| `revert_scene` | Publishes an earlier version again as the next version. On air it needs `confirm: true`. | `write` | |
-| `discard_scene_draft` | Puts the draft back to the published version. Every change since is lost. | `destructive` | Yes |
-| `delete_scene` | Deletes a scene and all its versions. Refused while a stream plays it. | `destructive` | Yes |
+| `revert_scene` | Publishes an earlier version again as the next version. Needs `expectedVersion` (the latest published version you saw); on air it needs `confirm: true`. | `write` | Yes |
+| `discard_scene_draft` | Puts the draft back to the published version. Every change since is lost. Needs the `draftRevision` you reviewed; `dryRun` lists what would be lost first. | `destructive` | Yes |
+| `delete_scene` | Deletes a scene and all its versions. Refused while a stream plays it. Without `confirm` it names the scene, its versions and the streams that play it. | `destructive` | Yes, confirm |
 | `set_stream_scene` | Makes a stopped stream play a scene's published version, or go back to its playlist. | `write` | |
 | `get_scene_state` | What each stream playing the scene has on air: the frame, the next one, controls and sources. | `read` | |
-| `control_scene` | Acts on air: takes a frame to air with a transition, cues the next, sets a control, replaces a table's rows, skips a track. | `write` | |
+| `control_scene` | Acts on air: takes a frame to air with a transition, cues the next, sets a control, replaces a table's rows, skips a track. | `write` | Yes |
 | `list_scene_inputs` | The scene's ingest keys (never the key itself), secret names and IP cameras. | `read` | |
 | `create_scene_ingest_key` | Gets the RTMP, RTMPS and SRT addresses and key for an encoder such as OBS. The key is shown once. | `write` | |
-| `revoke_scene_ingest_key` | Revokes an ingest key. The encoder using it is cut off at once. | `destructive` | Yes |
+| `revoke_scene_ingest_key` | Revokes an ingest key. The encoder using it is cut off at once. | `destructive` | Yes, confirm |
 | `set_scene_secret` | Saves an API key that a table sends. It's sealed and never shown again. | `write` | |
-| `delete_scene_secret` | Deletes a secret. Tables that use it stop getting it. | `destructive` | Yes |
+| `delete_scene_secret` | Deletes a secret. Tables that use it stop getting it. | `destructive` | Yes, confirm |

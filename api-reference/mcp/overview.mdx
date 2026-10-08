@@ -73,20 +73,24 @@ Everything (streams, media, playlists, destinations, scenes and credits) belongs
 
 ## Safety
 
-- **Irreversible tools need `confirm: true`.** Six tools delete or revoke something for good (marked **Destructive** on the [Tools](/api-reference/mcp/tools) page). Called without `confirm: true`, they change nothing and answer `Error [CONFIRM_REQUIRED]`. A well-behaved agent then tells you what the call will do and asks before it calls again.
-- **Changes on air ask first.** `publish_scene` and `revert_scene` on a scene that a running stream plays need `confirm: true`, because viewers see the change at once. Without it they answer `CONFIRM_REQUIRED` and name the streams.
-- **Tool hints.** Every tool declares the standard MCP annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), so clients can auto-approve reads and ask you before writes. `start_stream`, `schedule_stream` and `swap_live_playlist` put video in front of the public.
+- **Irreversible tools need `confirm: true`.** Five tools delete or revoke something for good (marked **Yes, confirm** on the [Tools](/api-reference/mcp/tools) page). Called without `confirm: true`, they change nothing and answer `Error [CONFIRM_REQUIRED]`, saying exactly what would go. A well-behaved agent then tells you and asks before it calls again.
+- **Changes on air ask first.** `publish_scene` and `revert_scene` on a scene that a running stream plays need `confirm: true`, because viewers see the change at once. Without it they answer `CONFIRM_REQUIRED` and name the streams. `confirm` always means "I accept what the refusal named".
+- **Tool hints.** Every tool declares the standard MCP annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), so clients can auto-approve reads and ask you before writes. `destructiveHint` is set on the tools that can't be undone and on those that change what viewers see (`stop_stream`, `swap_live_playlist`, `publish_scene`, `revert_scene`, `control_scene`), plus `scene_remove` and `discard_scene_draft`. Every tool also publishes an `outputSchema`.
 - **Unknown arguments are refused**, with the nearest valid field name, so a typo like `dryrun` never runs a real publish.
 
 ## Errors
 
-A failed tool call returns `isError: true` and one line of text with a stable code in brackets:
+A failed tool call returns `isError: true`, one line of text with a stable code in brackets, and the same as `structuredContent`:
 
 ```text
 Error [STREAM_LIVE]: Destination change refused
 ```
 
-Act on the code, not the wording. A scene error adds the details after the message: the list of problems, or the `currentRevision`. Common codes:
+```json
+{ "code": "STREAM_LIVE", "detail": "Destination change refused" }
+```
+
+Act on `code`, not the wording. `structuredContent` also carries what the refusal names: `errors` (each problem), `currentRevision`, or `publishedVersion` and `reverted` for `STALE_PUBLISH`. The codes are the REST API's: one code per meaning. If Streamloop's API doesn't answer, the code is `UNAVAILABLE`: try again. Common codes:
 
 | Code | Meaning |
 | --- | --- |
@@ -94,7 +98,9 @@ Act on the code, not the wording. A scene error adds the details after the messa
 | `INSUFFICIENT_SCOPE` | The token lacks the scope the tool needs. |
 | `CONFIRM_REQUIRED` | The call needs `confirm: true`. Ask the user first. |
 | `NOT_FOUND` | No such id in the selected workspace. |
-| `STREAM_LIVE`, `STREAM_ACTIVE` | The stream must be stopped for this change. |
+| `STREAM_LIVE` | The stream must be stopped for this change. |
+| `REVISION_REQUIRED` | A scene change to something that exists needs the `revision` you read. |
+| `STALE_PUBLISH` | Someone published since the version your draft is based on (or since the version a revert saw). |
 | `MULTISTREAM_NOT_ENABLED` | A second destination needs multistream on the workspace (rolling out). |
 | `DESTINATION_LIMIT`, `YOUTUBE_DESTINATION_LIMIT` | At most 5 destinations per stream, and at most one YouTube channel. |
 | `IN_USE` | Something still uses it (for example, a playlist uses the upload). |
@@ -131,7 +137,7 @@ The main paths:
 | `tokens` | Named colours, fonts and sizes. |
 | `element/<Type>` | The building blocks (`Text`, `Image`, `Video`, `Stack`, `Ticker`, …). Read-only. |
 
-**Revisions.** Every answer carries a `revision` for what it read and a `draftRevision` for the whole draft. Send the `revision` back to `scene_set` or `scene_remove` and the change is refused with `CONFLICT` (and the `currentRevision`) if someone edited it in between. Studios open on the scene show the agent's edits live.
+**Revisions.** Every answer carries a `revision` for what it read and a `draftRevision` for the whole draft. Send the `revision` back to `scene_set` or `scene_remove`, and the change is refused with `CONFLICT` (and the `currentRevision`) if someone edited it in between. Over the MCP it's required for anything that exists: without it the answer is `REVISION_REQUIRED`, and `"*"` replaces or removes whatever is there, on purpose. Studios open on the scene show the agent's edits live.
 
 **Publishing.** Edits change the draft only. Nothing reaches viewers until you publish:
 
