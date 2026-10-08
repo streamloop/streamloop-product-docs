@@ -18,7 +18,8 @@
 | Pre-recorded video loop / video loop | — | The loop type that plays uploaded media. |
 | Scene loop | — | The loop type built in the studio. Scenes are a **private beta**: say so on every scene page. |
 | show | — | Everything a scene loop plays. |
-| scene | — | In the studio, one arrangement of layers inside a show; one is on air at a time. In the dashboard, "Scene" is also the loop type and the tab. Use "scene loop" for the type and "scene" for the arrangement. |
+| scene | — | The thing you build in the studio and publish (id `scn_…`). In the dashboard, "Scene" is also the loop type and the tab. Use "scene loop" for the type. |
+| frame | scene (for what's on air) | One arrangement of layers inside a scene; one is on air at a time, and the operator or the script cuts between them. Paths `frame/<id>`, JSX `<Frame>`, live op `goFrame`. The studio says **New frame**, **Blank frame**. |
 | destination | channel, output | Where a loop streams to (YouTube, Twitch, custom RTMP). |
 | multistream | restream, simulcast | Up to 5 destinations per loop. Rolling out. |
 | Smart order | custom order, Order Program | The AI-built playlist order. |

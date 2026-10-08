@@ -119,7 +119,7 @@ A scene (id `scn_…`) is a live, designed stream: frames of text, pictures, vid
 
 | Tool | What it does |
 | --- | --- |
-| `scene_get` | Reads anything by path. `""` lists the kinds of thing a scene holds; `element/*` lists the building blocks and their props; `scene/<id>` returns one frame as JSX code. With `as: "image"` it returns a picture of the frame as it goes on air, with any problems (outside title-safe, overlapping, text too small). |
+| `scene_get` | Reads anything by path. `""` lists the kinds of thing a scene holds; `element/*` lists the building blocks and their props; `frame/<id>` returns one frame as JSX code, a `<Frame>…</Frame>` element. With `as: "image"` it returns a picture of the frame as it goes on air, with any problems (outside title-safe, overlapping, text too small). |
 | `scene_set` | Creates or changes one thing: a whole value, or exact text edits to its code. Every change is checked as the studio checks it. A refused change changes nothing and lists every problem. |
 | `scene_remove` | Deletes whole things, all or nothing. Anything still in use is refused, with what uses it. |
 | `scene_probe` | Fetches a URL once, changing nothing, to show what a table would read from it. |
@@ -128,8 +128,8 @@ The main paths:
 
 | Path | What it is |
 | --- | --- |
-| `scene/<id>` | One full frame: a background and layers. One is on air at a time. |
-| `scene/<id>/<layer>` | One layer in a frame. |
+| `frame/<id>` | One frame: a background and layers. One is on air at a time. `frame/*` lists them. |
+| `frame/<id>/<layer>` | One layer in a frame. |
 | `source/<kind>/<id>` | Something the scene reads: a camera, an RTMP or SRT input, a file, a playlist, a web page, a table (`data`) or a formula over tables. |
 | `control/<id>` | A switch, text or choice the operator sets while it runs. |
 | `component/<id>` | A reusable element, such as a lower third, written in TSX. |
@@ -153,4 +153,4 @@ The main paths:
   </Step>
 </Steps>
 
-While it runs, `control_scene` takes frames to air, sets controls and replaces a table's rows, and `get_scene_state` says what's on air. `list_scene_versions` and `revert_scene` go back to an earlier version; `discard_scene_draft` throws the draft away.
+While it runs, `control_scene` takes frames to air (`goFrame`), cues the next one (`next`), sets controls and replaces a table's rows, and `get_scene_state` says what's on air (`frame`, under `onAir`). `list_scene_versions` and `revert_scene` go back to an earlier version; `discard_scene_draft` throws the draft away.

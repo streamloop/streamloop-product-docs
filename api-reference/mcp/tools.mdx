@@ -118,8 +118,8 @@ The four `scene_*` tools read and change a scene's draft by path. See [Scenes](/
 | `discard_scene_draft` | Puts the draft back to the published version. Every change since is lost. Needs the `draftRevision` you reviewed; `dryRun` lists what would be lost first. | `destructive` | Yes |
 | `delete_scene` | Deletes a scene and all its versions. Refused while a stream plays it. Without `confirm` it names the scene, its versions and the streams that play it. | `destructive` | Yes, confirm |
 | `set_stream_scene` | Makes a stopped stream play a scene's published version, or go back to its playlist. | `write` | |
-| `get_scene_state` | What each stream playing the scene has on air: the frame, the next one, controls and sources. | `read` | |
-| `control_scene` | Acts on air: takes a frame to air with a transition, cues the next, sets a control, replaces a table's rows, skips a track. | `write` | Yes |
+| `get_scene_state` | What each stream playing the scene has on air: the frame (`frame`), the next one (`next`), controls and sources. | `read` | |
+| `control_scene` | Acts on air: takes a frame to air with a transition (`goFrame`), cues the next (`next`), sets a control, replaces a table's rows, skips a track. | `write` | Yes |
 | `list_scene_inputs` | The scene's ingest keys (never the key itself), secret names and IP cameras. | `read` | |
 | `create_scene_ingest_key` | Gets the RTMP, RTMPS and SRT addresses and key for an encoder such as OBS. The key is shown once. | `write` | |
 | `revoke_scene_ingest_key` | Revokes an ingest key. The encoder using it is cut off at once. | `destructive` | Yes, confirm |

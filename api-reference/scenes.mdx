@@ -26,8 +26,8 @@ A **scene** (id `scn_…`) is what a stream plays when it isn't a video loop. It
 
 | Path | What it is |
 | --- | --- |
-| `scene/<id>` | One full frame: a background and layers. One is on air at a time, and the stream cuts between them. Read and written as `{ name, description?, transition?, code }`, where `code` is its `<Scene>…</Scene>` element in JSX. |
-| `scene/<id>/<layer>` | One layer of a frame, with its props. |
+| `frame/<id>` | One frame: a background and layers. One is on air at a time, and the stream cuts between them. Read and written as `{ name, description?, transition?, code }`, where `code` is its `<Frame>…</Frame>` element in JSX. |
+| `frame/<id>/<layer>` | One layer of a frame, with its props. |
 | `source/<kind>/<id>` | Something the scene reads: a camera (`rtsp`), an input (`rtmp`, `srt`), a `file`, a `playlist`, a `web` page, a table (`data`) or a formula over tables (`derived`). |
 | `control/<id>` | A switch, text or choice the operator sets while the scene runs. |
 | `component/<id>` | A reusable element (a lower third, a score bug) written in TSX. |
@@ -35,7 +35,7 @@ A **scene** (id `scn_…`) is what a stream plays when it isn't a video loop. It
 | `tokens` | Named colours, fonts and sizes. |
 | `element/<Type>` | The building blocks (`Text`, `Image`, `Video`, `Rect`, `Stack`, `Ticker`, …) with every prop. Read-only. |
 
-`GET /v1/scenes/{id}/resources` lists the kinds. A path ending in `/*` lists one kind, for example `scene/*` or `element/*`. Each answer names the paths to read next in `children`.
+`GET /v1/scenes/{id}/resources` lists the kinds. A path ending in `/*` lists one kind, for example `frame/*` or `element/*`. Each answer names the paths to read next in `children`.
 
 All resources go through four operations:
 
@@ -74,14 +74,14 @@ H=(-H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS")
   </Step>
 
   <Step title="Write a frame">
-    Send the frame's code as JSX. The frame's id is its path, here `scene/intro`:
+    Send the frame's code as JSX. The frame's id is its path, here `frame/intro`:
 
     ```bash
-    curl "${H[@]}" -X PUT "$SCN/resources/scene/intro" \
+    curl "${H[@]}" -X PUT "$SCN/resources/frame/intro" \
       -H "Content-Type: text/jsx" \
-      --data-binary '<Scene background={{ type: "gradient", from: "#05070F", to: "#1B2A4A", angle: 160 }}>
+      --data-binary '<Frame background={{ type: "gradient", from: "#05070F", to: "#1B2A4A", angle: 160 }}>
       <Text id="title" value="Starting soon" x={96} y={54} style={{ fontSize: 72, color: "#FFFFFF" }} />
-    </Scene>'
+    </Frame>'
     ```
 
     A new resource answers `201`, with `revision` (also the `ETag` header), a `diff` of what changed, and `draftRevision`. If the code doesn't build or check, the answer is `422 CHECK_FAILED`, nothing changes, and `errors` lists every problem with its line.
@@ -93,7 +93,7 @@ H=(-H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS")
     Get a picture of the frame as it goes on air:
 
     ```bash
-    curl "${H[@]}" "$SCN/resources/scene/intro?as=image" -o intro.png
+    curl "${H[@]}" "$SCN/resources/frame/intro?as=image" -o intro.png
     ```
 
     With `Accept: image/png` (or no `Accept`) the answer is a PNG, at most 1280 px wide. With `Accept: application/json` you get the picture as a data URL plus what drew (`drawn`) and what's wrong (`issues`): text outside title-safe, overlapping or too small, or a bound table with no rows. Add `overlay=grid` or `overlay=ids` to line things up, and `at=<ms>` to draw a moment after the frame goes on air.
@@ -121,7 +121,7 @@ H=(-H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS")
     {
       "version": 1,
       "publishedAt": "2026-10-07T12:00:00Z",
-      "changes": ["add scene/intro"],
+      "changes": ["add frame/intro"],
       "notes": []
     }
     ```
@@ -151,8 +151,8 @@ H=(-H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS")
 Once a scene is on air:
 
 - **Publishing changes what viewers see at once.** So `POST /publish` (and `POST /revert`) on a scene a running stream plays answers `409 CONFIRM_REQUIRED`, naming the streams. Send it again with `"confirm": true` to accept that. `confirm` always means "I accept what the refusal named".
-- `GET /v1/scenes/{id}/live` says what's on air on each stream: the frame, the next one cued, control values and source status.
-- `POST /v1/scenes/{id}/live` acts like an operator, with the same names as the MCP's `control_scene`: `goScene` with `target` (take `scene/<target>` to air, with a transition such as `fade`), `next` (cue a frame), `setControl` with `controlId` and `value`, `setData` with `sourceId` and `rows` (replace a table's rows) and `skip` with `sourceId` (a playlist source's next item); `streamId` when several streams play it. The action is checked first against what's published (a frame, control, table or playlist source that isn't there, or a toggle given `"yes"`, is `422 INVALID_INPUT`); then it answers `409 SCENE_OFFLINE` when no stream plays the scene.
+- `GET /v1/scenes/{id}/live` says what's on air on each stream: under `onAir`, the frame on air (`frame`), the next one cued (`next`), control values and source status.
+- `POST /v1/scenes/{id}/live` acts like an operator, with the same names as the MCP's `control_scene`: `goFrame` with `target` (take `frame/<target>` to air, with a transition such as `fade`), `next` (cue a frame), `setControl` with `controlId` and `value`, `setData` with `sourceId` and `rows` (replace a table's rows) and `skip` with `sourceId` (a playlist source's next item); `streamId` when several streams play it. The action is checked first against what's published (a frame, control, table or playlist source that isn't there, or a toggle given `"yes"`, is `422 INVALID_INPUT`); then it answers `409 SCENE_OFFLINE` when no stream plays the scene.
 - `GET /versions` lists published versions; `POST /revert` with `{ "version": n, "expectedVersion": <the latest published version you saw> }` publishes an old one again as the next version (`409 STALE_PUBLISH` if someone published since; after a revert, publishing the draft asks for `overwritePublished`, or discard the draft to match); `POST /discard` with `{ "draftRevision": "…" }` puts the draft back to what's published. Add `"dryRun": true` first to see what would be lost (`lost`). If the draft changed after your `draftRevision`, nothing is discarded (`409 CONFLICT`).
 
 Live inputs and keys:
@@ -190,7 +190,7 @@ Errors are [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) problem documents 
   "code": "CHECK_FAILED",
   "detail": "…",
   "errors": [
-    { "line": 2, "path": "scene/intro", "message": "…" }
+    { "line": 2, "path": "frame/intro", "message": "…" }
   ]
 }
 ```
