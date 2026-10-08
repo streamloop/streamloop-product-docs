@@ -28,8 +28,8 @@ The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake
 | `get_stream` | One stream's full configuration: state, quality, framerate, destinations and schedule. | `read` | |
 | `create_stream` | Creates a new stream, with an empty video playlist and an empty audio playlist. It starts once it has a destination plus either a video playlist with items or a published scene (`set_stream_scene`). | `write` | |
 | `update_stream` | Changes a stream's settings (name, quality, framerate, duration, storage, backup stream) and its YouTube broadcast settings. | `write` | |
-| `check_stream_readiness` | Says whether `start_stream` would work right now, and lists every blocking issue. Changes nothing. | `read` | |
-| `start_stream` | Starts streaming now. Puts video in front of the public. | `write` | |
+| `check_stream_readiness` | Says whether `start_stream` would work right now, and lists every blocking issue (not credits, and not whether an upload has finished processing). Changes nothing. | `read` | |
+| `start_stream` | Starts streaming now. Puts video in front of the public. Read `state` in its answer: `invalid` means refused, with `issues`; `preparing` means accepted. | `write` | |
 | `stop_stream` | Stops a live or starting stream. Nothing is deleted. Doesn't cancel a repeating schedule. | `write` | Yes |
 | `schedule_stream` | Sets the window a stream runs in, once, daily or weekly, and arms it. | `write` | |
 | `cancel_stream_schedule` | Disarms a schedule and clears any repeat. Doesn't stop a stream that's live. | `write` | |
