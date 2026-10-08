@@ -1,0 +1,426 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Streamloop Scenes API",
+    "version": "1.0.0",
+    "description": "Build and run scenes: live, designed streams. A scene (id `scn_…`) holds frames — full arrangements of layers (text, pictures, video, web pages, tables, tickers), one on air at a time — each at `frame/<id>`, plus the sources it reads (cameras, RTMP/SRT inputs, files, playlists, URLs, Google Sheets), its components and its script. You edit its draft as resources at paths (`frame/intro`, `frame/intro/title`, `source/data/headlines`, `component/LowerThird`, `script/show.ts`); every write is built and checked as the Streamloop studio checks it, and studios open on it see it at once. Nothing reaches viewers until you publish. To put a scene on a stream: `PUT /v1/streams/{id}/scene` (Streamloop REST API), then start the stream.\n\nThis API follows the conventions of Streamloop's REST API: the same authentication (`X-API-Key`, an OAuth bearer, or the dashboard's session), `X-Workspace-Id`, RFC 7807 problems with a stable `code`, cursor pages, `Idempotency-Key` on POST and PATCH, and `RateLimit-*` headers (600 requests a minute)."
+  },
+  "servers": [{ "url": "https://api.streamloop.app/v1" }],
+  "security": [{ "apiKey": [] }, { "oauth": [] }],
+  "tags": [
+    { "name": "scenes", "description": "Create, list, read and delete scenes." },
+    { "name": "draft", "description": "Read and change the scene's draft, resource by resource. Start with `GET /scenes/{id}/resources` (the kinds of thing it holds) and `GET /scenes/{id}/resources/element/*` (the building blocks and their props)." },
+    { "name": "publishing", "description": "Put the draft on air, see what was published, go back." },
+    { "name": "live", "description": "What a stream playing the scene has on air, and the operator's actions." },
+    { "name": "inputs", "description": "Live inputs: ingest keys for RTMP/RTMPS/SRT encoders, RTSP cameras, and secrets the scene's tables use." }
+  ],
+  "paths": {
+    "/scenes": {
+      "get": {
+        "tags": ["scenes"], "operationId": "listScenes", "summary": "List scenes",
+        "description": "The workspace's scenes, newest first (by when each was made, so an edit made while you page never moves one between pages).",
+        "parameters": [{ "$ref": "#/components/parameters/limit" }, { "$ref": "#/components/parameters/cursor" }, { "$ref": "#/components/parameters/workspace" }],
+        "responses": { "200": { "description": "A page of scenes", "content": { "application/json": { "schema": { "type": "object", "required": ["data", "page"], "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/SceneSummary" } }, "page": { "$ref": "#/components/schemas/Page" } } } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      },
+      "post": {
+        "tags": ["scenes"], "operationId": "createScene", "summary": "Create a scene",
+        "description": "A new scene, nothing published. Its draft starts empty — build it with `PUT /scenes/{id}/resources/frame/{frame}` — or, to import one, from `draft`: a whole scene document in the studio's format. A name is 1 to 120 characters.",
+        "parameters": [{ "$ref": "#/components/parameters/workspace" }, { "$ref": "#/components/parameters/idempotency" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["name"], "additionalProperties": false, "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "draft": { "type": "object", "required": ["show"], "additionalProperties": false, "description": "Import: the draft to start from, refused (422) unless `show` is an object. A studio's saved project has this shape.", "properties": {
+            "show": { "type": "object", "description": "The scene document: `{ version: 2, name, design?: {width, height}, frames: [{ id, name, root }], sources?, data?, controls?, components?, tokens?, stateType?, stateSchema? }` — each `frames[]` entry is what `GET …/resources/frame/<id>?as=json` answers, each source, table, control and component what its resource answers. A document from before frames (`scenes: […]`, roots `type: \"Scene\"`) is read as frames.", "additionalProperties": true },
+            "script": { "type": "string", "description": "The TypeScript of `script/show.ts` (empty: none)" }
+          } }
+        } } } } },
+        "responses": { "201": { "description": "The scene", "headers": { "Location": { "schema": { "type": "string" }, "description": "/v1/scenes/{id}" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Scene" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      }
+    },
+    "/scenes/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "get": {
+        "tags": ["scenes"], "operationId": "getScene", "summary": "Get a scene",
+        "description": "Its name, the version last published, the streams that play it, and `draftRevision`: the draft as it is now, what publish and discard take (also the `Draft-Revision` header). The `ETag` changes with its name and published version: send it as `If-Match` to rename only what you read. What is published reads as resources: `GET /scenes/{id}/resources/{path}?version=published`.",
+        "responses": { "200": { "description": "The scene", "headers": { "ETag": { "schema": { "type": "string" } }, "Draft-Revision": { "schema": { "type": "string" }, "description": "The draft's revision now" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Scene" } } } }, "404": { "$ref": "#/components/responses/NotFound" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      },
+      "patch": {
+        "tags": ["scenes"], "operationId": "renameScene", "summary": "Rename a scene",
+        "description": "A name is 1 to 120 characters. With `If-Match` (the ETag GET answered), refused with 412 PRECONDITION_FAILED if the scene changed since (edited, renamed or published), checked as it is written: of two renames with one ETag, one lands; a weak tag never matches.",
+        "parameters": [{ "$ref": "#/components/parameters/ifMatch" }, { "$ref": "#/components/parameters/idempotency" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["name"], "additionalProperties": false, "properties": { "name": { "type": "string", "minLength": 1, "maxLength": 120 } } } } } },
+        "responses": { "200": { "description": "The scene", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Scene" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      },
+      "delete": {
+        "tags": ["scenes"], "operationId": "deleteScene", "summary": "Delete a scene",
+        "description": "For good, with its versions, ingest keys and cameras. Refused (409 SCENE_IN_USE) while a stream points at it. With `If-Match` (the ETag GET answered), refused with 412 PRECONDITION_FAILED (with `currentRevision`) if the scene changed since (renamed or published): checked before anything is revoked, and again as the scene is deleted; a weak tag never matches.",
+        "parameters": [{ "name": "If-Match", "in": "header", "schema": { "type": "string" }, "description": "The scene's ETag, as GET answered it (one, or a comma-separated list of which any current one matches; weak tags never match)" }],
+        "responses": { "204": { "description": "Deleted" }, "412": { "$ref": "#/components/responses/PreconditionFailed" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:destructive"
+      }
+    },
+    "/scenes/{id}/resources": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "get": {
+        "tags": ["draft"], "operationId": "listResourceTypes", "summary": "List what a scene holds",
+        "description": "The kinds of resource (frame, source, control, component, script, tokens, element), each with what it is and its paths.",
+        "responses": { "200": { "$ref": "#/components/responses/Answer" }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/Refused" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      }
+    },
+    "/scenes/{id}/resources/{path}": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/path" }, { "$ref": "#/components/parameters/workspace" }],
+      "get": {
+        "tags": ["draft"], "operationId": "getResource", "summary": "Read a resource",
+        "description": "A resource with its `revision` (also the `ETag`) and `children` (the paths to read next); a type (`frame`, `source/data`, `element/Text`: what it takes, with an example); or a list (a path ending in `/*`). `as=image` on a `frame/<id>` or a layer answers a PNG of it as it goes on air, drawn by the channel's renderer — or, with `Accept: application/json`, the picture as a data URL with what drew (`drawn`) and what is wrong (`issues`: outside title-safe, overlapping, too small, a bound table with no rows). `version` reads a published version instead of the draft. `If-None-Match` with the ETag you hold answers 304 when nothing changed.",
+        "parameters": [
+          { "name": "as", "in": "query", "schema": { "type": "string", "enum": ["image", "json"] }, "description": "image: a PNG of a `frame/<id>` (at most 1280 px wide) or a layer (full size); json: a `frame/<id>` as a node tree instead of JSX" },
+          { "name": "version", "in": "query", "schema": { "type": "string" }, "description": "A published version's number (a positive integer), or `published`; anything else is 422 INVALID_INPUT" },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 200 }, "description": "Rows per page (…/rows)" },
+          { "name": "offset", "in": "query", "schema": { "type": "integer", "minimum": 0 }, "description": "First row (…/rows)" },
+          { "name": "at", "in": "query", "schema": { "type": "number" }, "description": "Picture: ms since that `frame/<id>` went on air" },
+          { "name": "overlay", "in": "query", "schema": { "type": "string", "enum": ["grid", "ids"] }, "description": "Picture: a 10 % grid, or each layer's outline and id" },
+          { "name": "data", "in": "query", "schema": { "type": "string", "enum": ["live", "sample"] }, "description": "Picture: bindings read live values (the default: tables as last read) or each table's sample rows. A picture draws the frame as it would go on air — it is not a capture of a running stream: controls and state are at their starting values" }
+        ],
+        "responses": {
+          "200": { "description": "The answer, or a PNG for as=image (a picture lists, with Accept: application/json, what didn't draw in `notDrawn` and why in `issues` — an Image whose file the channel can't load among them)", "headers": { "ETag": { "schema": { "type": "string" }, "description": "The resource's revision; for a PNG, a hash of the picture itself" }, "Draft-Revision": { "schema": { "type": "string" }, "description": "The draft read (not on a published version's answer)" }, "Scene-Version": { "schema": { "type": "integer" }, "description": "With `version`: the published version read (`published` answers its number); also `version` in the JSON" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Answer" } }, "image/png": { "schema": { "type": "string", "format": "binary" } } } },
+          "304": { "description": "Not changed since the If-None-Match revision" },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" },
+          "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" }
+        },
+        "x-scope": "streamloop:read"
+      },
+      "put": {
+        "tags": ["draft"], "operationId": "putResource", "summary": "Create or replace a resource",
+        "description": "The whole resource, as GET answers it: a `frame/<id>` `{ name, description?, transition?, code }` (code: its `<Frame>…</Frame>` element in JSX) or `{ name, root }` (JSON); a component `{ description, props, tsx }`; a source its fields. Or the code alone, with `Content-Type: text/jsx` (a `frame/<id>`), `text/tsx` (a component) or `text/typescript` (the script). Built and checked as the studio checks it: a refused change changes nothing and answers every problem (422 CHECK_FAILED, `errors`). `If-Match`: the revision you read; 412 PRECONDITION_FAILED (with `currentRevision`) if it changed since (`*`: it must exist); `If-None-Match: *` creates only. A new resource answers 201 with its Location. Code sent as the wrong kind for its path, or a body that is neither JSON nor code (`application/xml`), is 415.",
+        "parameters": [{ "$ref": "#/components/parameters/ifMatch" }, { "$ref": "#/components/parameters/ifNoneMatch" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true }, "example": { "name": "Weather", "description": "London weather over a dark gradient", "code": "<Frame background={{ type: \"gradient\", from: \"#05070F\", to: \"#1B2A4A\", angle: 160 }}>\n  <Text id=\"temp\" value={data.weather.rows[0].temperature_2m} x={96} y={54} style={{ fontSize: 72, color: \"#FFFFFF\" }} />\n</Frame>" } }, "text/jsx": { "schema": { "type": "string" } }, "text/tsx": { "schema": { "type": "string" } }, "text/typescript": { "schema": { "type": "string" } } } },
+        "responses": { "200": { "$ref": "#/components/responses/Answer" }, "201": { "description": "Made: the answer, with Location", "headers": { "Location": { "schema": { "type": "string" } }, "ETag": { "schema": { "type": "string" } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Answer" } } } }, "412": { "$ref": "#/components/responses/PreconditionFailed" }, "415": { "$ref": "#/components/responses/Problem" }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/Refused" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      },
+      "patch": {
+        "tags": ["draft"], "operationId": "patchResource", "summary": "Change part of a resource",
+        "description": "Either text replacements in its code — `[{ \"old\": \"…\", \"new\": \"…\" }]`, each `old` matching exactly once (code is stored formatted: copy `old` from what GET answered; 409 EDIT_NO_MATCH quotes the closest line) — or a JSON merge patch of its fields (`application/merge-patch+json` or JSON; null removes a field). One layer changes alone at its own path (`frame/intro/title` with `{ \"props\": { … } }`). Checked like PUT.",
+        "parameters": [{ "$ref": "#/components/parameters/ifMatch" }, { "$ref": "#/components/parameters/idempotency" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "oneOf": [{ "type": "array", "items": { "type": "object", "required": ["old", "new"], "properties": { "old": { "type": "string" }, "new": { "type": "string" }, "field": { "type": "string" } } } }, { "type": "object", "additionalProperties": true }] } }, "application/merge-patch+json": { "schema": { "type": "object", "additionalProperties": true } } } },
+        "responses": { "200": { "$ref": "#/components/responses/Answer" }, "412": { "$ref": "#/components/responses/PreconditionFailed" }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/Refused" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      },
+      "delete": {
+        "tags": ["draft"], "operationId": "deleteResource", "summary": "Remove a resource",
+        "description": "A frame, layer, source, component or control of the draft (the scene itself: DELETE /scenes/{id}). Refused (409 IN_USE) while something else uses it, naming what. `If-Match` guards it like PUT.",
+        "parameters": [{ "$ref": "#/components/parameters/ifMatch" }],
+        "responses": { "200": { "$ref": "#/components/responses/Answer" }, "412": { "$ref": "#/components/responses/PreconditionFailed" }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/Refused" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      }
+    },
+    "/scenes/{id}/remove": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "post": {
+        "tags": ["draft"], "operationId": "removeResources", "summary": "Remove several resources at once",
+        "description": "All or nothing: what uses one of them is fine when it goes too. `revisions` guards each path like If-Match.",
+        "parameters": [{ "$ref": "#/components/parameters/idempotency" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["paths"], "properties": { "paths": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "revisions": { "type": "object", "additionalProperties": { "type": "string" } } } } } } },
+        "responses": { "200": { "$ref": "#/components/responses/Answer" }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/Refused" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      }
+    },
+    "/scenes/{id}/probe": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "post": {
+        "tags": ["draft"], "operationId": "probeUrl", "summary": "Look at a URL before making a table of it",
+        "description": "Fetches it once, changing nothing: status, content type, an outline of the JSON or the page's text, and the rows a table would get with `connector`, `pick` and `headers`.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["url"], "properties": { "url": { "type": "string", "format": "uri" }, "connector": { "type": "string", "enum": ["json", "csv", "xlsx", "sheets", "html"] }, "pick": { "type": "string", "description": "json: a path into the document (an array there is the rows); html: a CSS selector" }, "sheet": { "type": "string" }, "headers": { "type": "object", "additionalProperties": { "type": "string" } } } } } } },
+        "responses": { "200": { "$ref": "#/components/responses/Answer" }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/Refused" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      }
+    },
+    "/scenes/{id}/publish": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "post": {
+        "tags": ["publishing"], "operationId": "publishScene", "summary": "Publish the draft",
+        "description": "Publishes the draft exactly as it was at `draftRevision` (required: in the body, or as `If-Match: \"<draftRevision>\"`; sent both ways, they must name the same draft, else 422 INVALID_INPUT; every draft answer and GET /scenes/{id} carry the current one), whatever was edited since. It is checked as the channel loads it — the document check, and the type check of `script/show.ts`, `script/state.ts`, every `frame/<id>` and component — and becomes the next version.\n\n- When the draft changed after that revision but nobody published since, the answer says so: `stale: true` and a note (those edits are not in this version; they are still in the draft).\n- When a version was published after the one that revision's draft was based on, publishing it would take that version back: 409 STALE_PUBLISH (412 when the draftRevision came as If-Match) names `publishedVersion`, `basedOn` and what would be `reverted`. Read the draft again, or send `overwritePublished: <publishedVersion>` to replace it anyway. When that version is a revert (`publishedVersionIsRevert: true`), reading again changes nothing: send `overwritePublished` to publish the draft over it, or discard the draft to keep the reverted version. Two publishes at once are answered in turn: the second is `unchanged` at the first one's version when it publishes the same draft, else that STALE_PUBLISH.\n- A stream that has the scene on air plays the new version at once: 409 CONFIRM_REQUIRED names the streams; send `confirm: true` to accept that.\n- A draftRevision no answer about this scene gave is 422 INVALID_INPUT in the body, 412 PRECONDITION_FAILED as If-Match; one with edits the server doesn't have yet is 409 DRAFT_NOT_SAVED.\n\nA draft equal to what is published makes no version (`unchanged: true`). `dryRun: true` checks it and lists what would change, publishing nothing. Refused with every problem (422 SCENE_INVALID, `errors`, each with its `path` and line for a type error). The answer lists the `changes` as resource paths and `notes` worth knowing.",
+        "parameters": [{ "$ref": "#/components/parameters/ifMatch" }, { "$ref": "#/components/parameters/idempotency" }],
+        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false, "properties": {
+          "draftRevision": { "type": "string", "description": "The draft to publish, from the answer you reviewed (or send If-Match)" },
+          "confirm": { "type": "boolean", "description": "I accept what CONFIRM_REQUIRED named: viewers see this at once" },
+          "overwritePublished": { "type": "integer", "minimum": 1, "description": "I accept what STALE_PUBLISH named: replace this published version (its number) and what was published since the draft's base" },
+          "dryRun": { "type": "boolean", "description": "Only check, and say what would change" }
+        } } } } },
+        "responses": { "200": { "description": "Published (or checked, with dryRun)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Published" } } } }, "409": { "$ref": "#/components/responses/Conflict" }, "412": { "$ref": "#/components/responses/PreconditionFailed" }, "422": { "$ref": "#/components/responses/Refused" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      }
+    },
+    "/scenes/{id}/discard": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "post": {
+        "tags": ["publishing"], "operationId": "discardDraft", "summary": "Discard the draft",
+        "description": "Puts the draft back to what is published: every change since is lost (studios open on the scene can still undo it). `draftRevision` is required (in the body, or as If-Match; sent both ways, they must name the same draft, else 422 INVALID_INPUT): the draft you reviewed; if it changed after that, nothing is discarded (code CONFLICT with `currentRevision`: read it again; status 409 for the body's draftRevision, 412 for If-Match). From then on the draft is based on that version, a revert too: publishing it unchanged answers `unchanged`. `dryRun: true` says what would be lost (`lost`, as resource paths) and discards nothing. 409 NOT_PUBLISHED when nothing is published.",
+        "parameters": [{ "$ref": "#/components/parameters/ifMatch" }, { "$ref": "#/components/parameters/idempotency" }],
+        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false, "properties": { "draftRevision": { "type": "string" }, "dryRun": { "type": "boolean" } } } } } },
+        "responses": { "200": { "description": "The draft is the published version again (or, with dryRun, what would be lost)", "content": { "application/json": { "schema": { "type": "object", "properties": { "summary": { "type": "string" }, "version": { "type": "integer" }, "lost": { "type": "array", "items": { "type": "string" }, "description": "What the draft had that the published version doesn't, as resource paths" }, "dryRun": { "type": "boolean" }, "draftRevision": { "type": "string", "description": "The draft's revision after the discard" } } } } } }, "409": { "$ref": "#/components/responses/Conflict" }, "412": { "$ref": "#/components/responses/PreconditionFailed" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:destructive"
+      }
+    },
+    "/scenes/{id}/versions": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "get": {
+        "tags": ["publishing"], "operationId": "listVersions", "summary": "List published versions",
+        "description": "Newest first; a publish made while you page doesn't shift the pages. Read one with `GET /scenes/{id}/resources/{path}?version=<n>`.",
+        "parameters": [{ "$ref": "#/components/parameters/limit" }, { "$ref": "#/components/parameters/cursor" }],
+        "responses": { "200": { "description": "A page of versions", "content": { "application/json": { "schema": { "type": "object", "required": ["data", "page"], "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/Version" } }, "page": { "$ref": "#/components/schemas/Page" } } } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      }
+    },
+    "/scenes/{id}/revert": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "post": {
+        "tags": ["publishing"], "operationId": "revertScene", "summary": "Publish an older version again",
+        "description": "Its document becomes the next version (the draft is untouched: publishing the draft later is refused with STALE_PUBLISH until you send overwritePublished, and discard makes the draft this version too). `expectedVersion` is required — the latest published version you saw (`version` in GET /scenes/{id}), or send it as `If-Match: \"<n>\"` (sent both ways, they must be the same number, else 422 INVALID_INPUT); if someone published since — found up front or by a revert that lands first — nothing changes: STALE_PUBLISH (status 409 for expectedVersion, 412 for If-Match) with `publishedVersion` and what the revert would also take off air (`reverted`). On air, it is refused with CONFIRM_REQUIRED like a publish: send `confirm: true` to accept that.",
+        "parameters": [{ "$ref": "#/components/parameters/idempotency" }, { "name": "If-Match", "in": "header", "schema": { "type": "string" }, "description": "The published version you saw, instead of expectedVersion" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["version"], "additionalProperties": false, "properties": { "version": { "type": "integer", "minimum": 1, "description": "A published version's number (0 or less: 422 INVALID_INPUT; one that doesn't exist: 404)" }, "expectedVersion": { "type": "integer", "minimum": 0, "description": "The latest published version you saw (required, or If-Match)" }, "confirm": { "type": "boolean", "description": "I accept what CONFIRM_REQUIRED named: viewers see this at once" } } } } } },
+        "responses": { "200": { "description": "Published", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Published" } } } }, "409": { "$ref": "#/components/responses/Conflict" }, "412": { "$ref": "#/components/responses/PreconditionFailed" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      }
+    },
+    "/scenes/{id}/live": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "get": {
+        "tags": ["live"], "operationId": "getLive", "summary": "What is on air",
+        "description": "Each stream that plays the scene (by stream id): its state, and in `onAir` what plays there (online, `frame`: the id of the `frame/<id>` on air, `next`: the one cued; `scene` says the same as `frame` and is deprecated, kept for one release).",
+        "parameters": [{ "$ref": "#/components/parameters/limit" }, { "$ref": "#/components/parameters/cursor" }],
+        "responses": { "200": { "description": "A page, per stream", "content": { "application/json": { "schema": { "type": "object", "required": ["data", "page"], "properties": { "data": { "type": "array", "items": { "type": "object", "properties": { "stream": { "type": "string" }, "name": { "type": "string" }, "state": { "type": "string" }, "onAir": { "type": "object", "additionalProperties": true, "properties": { "online": { "type": "boolean" }, "frame": { "type": ["string", "null"], "description": "The frame on air (the id in `frame/<id>`)" }, "next": { "type": ["string", "null"], "description": "The frame cued" }, "scene": { "type": ["string", "null"], "deprecated": true, "description": "The same as `frame` (its name before frames); kept for one release" } } } } } }, "page": { "$ref": "#/components/schemas/Page" } } } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      },
+      "post": {
+        "tags": ["live"], "operationId": "controlLive", "summary": "Act on air",
+        "description": "Take a `frame/<id>` to air (`goFrame`, with a transition), cue one so the take is instant (`next`), set a control (`setControl`), replace a table's rows (`setData`), or move a playlist source on (`skip`). `streamId` may be left out when one stream plays the scene. Checked first, in this order: the body (422 INVALID_INPUT: an unknown op, a field the op doesn't take, a missing target or controlId, a transition that isn't one of its kinds or has an `ms` that isn't a whole number ≥ 0 or a field besides kind and ms, a `streamId` that isn't a string; the op from before frames, goScene, is refused naming goFrame), then against the published version (422 INVALID_INPUT: a `frame/<id>`, control, table or playlist source it doesn't have, or a control value of the wrong type — a toggle takes true or false; 409 NOT_PUBLISHED when nothing is published); only then 409 SCENE_OFFLINE when nothing plays it.\n\nA 504 SCENE_TIMEOUT may or may not have been applied. Send an `Idempotency-Key` (one per action, kept by you): a repeat with the same key and body is applied at most once — its first answer is replayed (`Idempotency-Replayed: true`), and after a SCENE_TIMEOUT the retry reaches the stream with the same key, which applies it only if the first did not arrive. Without a key, do not retry an action that is not idempotent (skip, a button) blind: read GET /scenes/{id}/live first.",
+        "parameters": [{ "$ref": "#/components/parameters/idempotency" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Control" } } } },
+        "responses": { "200": { "description": "Applied", "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      }
+    },
+    "/scenes/{id}/ingest-keys": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "get": {
+        "tags": ["inputs"], "operationId": "listIngestKeys", "summary": "List ingest keys",
+        "description": "Newest first.",
+        "parameters": [{ "$ref": "#/components/parameters/limit" }, { "$ref": "#/components/parameters/cursor" }],
+        "responses": { "200": { "description": "A page of the scene's keys (never the key itself)", "content": { "application/json": { "schema": { "type": "object", "required": ["data", "page"], "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/IngestKey" } }, "page": { "$ref": "#/components/schemas/Page" } } } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      },
+      "post": {
+        "tags": ["inputs"], "operationId": "createIngestKey", "summary": "Create an ingest key",
+        "description": "For an `rtmp` or `srt` source of the draft: where an encoder (OBS, vMix) sends. The key is in this answer only.",
+        "parameters": [{ "$ref": "#/components/parameters/idempotency" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["sourceId"], "properties": { "sourceId": { "type": "string" } } } } } },
+        "responses": { "201": { "description": "The key, with its secret once", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IngestKey" } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      }
+    },
+    "/scenes/{id}/ingest-keys/{key}": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "name": "key", "in": "path", "required": true, "schema": { "type": "string" }, "description": "The key's id (`ingkey_…`)" }, { "$ref": "#/components/parameters/workspace" }],
+      "delete": {
+        "tags": ["inputs"], "operationId": "revokeIngestKey", "summary": "Revoke an ingest key",
+        "description": "An encoder using it is cut off.",
+        "responses": { "204": { "description": "Revoked" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:destructive"
+      }
+    },
+    "/scenes/{id}/ingest-keys/{key}/rotate": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "name": "key", "in": "path", "required": true, "schema": { "type": "string" }, "description": "The key's id (`ingkey_…`)" }, { "$ref": "#/components/parameters/workspace" }],
+      "post": {
+        "tags": ["inputs"], "operationId": "rotateIngestKey", "summary": "Replace an ingest key",
+        "description": "A new key for the same source; the old one stops working.",
+        "parameters": [{ "$ref": "#/components/parameters/idempotency" }],
+        "responses": { "201": { "description": "The new key, with its secret once", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IngestKey" } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      }
+    },
+    "/scenes/{id}/secrets": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "get": {
+        "tags": ["inputs"], "operationId": "listSecrets", "summary": "List secrets",
+        "description": "By name; names only: a value is never returned. A table names one as `$secret:<name>` in a header or a URL's query.",
+        "parameters": [{ "$ref": "#/components/parameters/limit" }, { "$ref": "#/components/parameters/cursor" }],
+        "responses": { "200": { "description": "A page of the scene's secrets", "content": { "application/json": { "schema": { "type": "object", "required": ["data", "page"], "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/Secret" } }, "page": { "$ref": "#/components/schemas/Page" } } } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      }
+    },
+    "/scenes/{id}/secrets/{name}": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "name": "name", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,64}$" } }, { "$ref": "#/components/parameters/workspace" }],
+      "put": {
+        "tags": ["inputs"], "operationId": "putSecret", "summary": "Save a secret",
+        "description": "An API key or token a table sends (sealed at rest; at most 100 per scene). A table reads it as `$secret:<name>`.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["value"], "properties": { "value": { "type": "string" } } } } } },
+        "responses": { "200": { "description": "Saved", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Secret" } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      },
+      "delete": {
+        "tags": ["inputs"], "operationId": "deleteSecret", "summary": "Delete a secret",
+        "responses": { "204": { "description": "Deleted" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:destructive"
+      }
+    },
+    "/scenes/{id}/cameras": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "get": {
+        "tags": ["inputs"], "operationId": "listCameras", "summary": "List cameras",
+        "description": "In the order they were added.",
+        "parameters": [{ "$ref": "#/components/parameters/limit" }, { "$ref": "#/components/parameters/cursor" }],
+        "responses": { "200": { "description": "A page of the scene's RTSP cameras (never a password)", "content": { "application/json": { "schema": { "type": "object", "required": ["data", "page"], "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/Camera" } }, "page": { "$ref": "#/components/schemas/Page" } } } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      },
+      "post": {
+        "tags": ["inputs"], "operationId": "createCamera", "summary": "Add a camera",
+        "description": "An RTSP camera on a public address (422 CAMERA_PRIVATE_ADDRESS otherwise) for an `rtsp` source of the draft.",
+        "parameters": [{ "$ref": "#/components/parameters/idempotency" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CameraInput" } } } },
+        "responses": { "201": { "description": "The camera", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Camera" } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      }
+    },
+    "/scenes/{id}/cameras/test": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "$ref": "#/components/parameters/workspace" }],
+      "post": {
+        "tags": ["inputs"], "operationId": "testCamera", "summary": "Test a camera",
+        "description": "Connects once: refused, unreachable, timeout, auth, not_found or unsupported, or the codec, size and frame rate, with a snapshot (none for H.265).",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CameraInput" } } } },
+        "responses": { "200": { "description": "The result", "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      }
+    },
+    "/scenes/{id}/cameras/{camera}": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "name": "camera", "in": "path", "required": true, "schema": { "type": "string" } }, { "$ref": "#/components/parameters/workspace" }],
+      "put": {
+        "tags": ["inputs"], "operationId": "updateCamera", "summary": "Change a camera",
+        "description": "A password left out keeps the saved one; an empty one removes it.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CameraInput" } } } },
+        "responses": { "200": { "description": "The camera", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Camera" } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:write"
+      },
+      "delete": {
+        "tags": ["inputs"], "operationId": "deleteCamera", "summary": "Remove a camera",
+        "responses": { "204": { "description": "Removed" }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:destructive"
+      }
+    },
+    "/scenes/{id}/cameras/{camera}/snapshot": {
+      "parameters": [{ "$ref": "#/components/parameters/id" }, { "name": "camera", "in": "path", "required": true, "schema": { "type": "string" } }, { "$ref": "#/components/parameters/workspace" }],
+      "get": {
+        "tags": ["inputs"], "operationId": "getCameraSnapshot", "summary": "The camera's last snapshot",
+        "responses": { "200": { "description": "A JPEG", "content": { "image/jpeg": { "schema": { "type": "string", "format": "binary" } } } }, "4XX": { "$ref": "#/components/responses/Problem" }, "5XX": { "$ref": "#/components/responses/Problem" } },
+        "x-scope": "streamloop:read"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": { "type": "apiKey", "in": "header", "name": "X-API-Key", "description": "A Streamloop API key (`sl_…`). It carries no workspace: send `X-Workspace-Id` too (400 WORKSPACE_REQUIRED otherwise)." },
+      "oauth": { "type": "http", "scheme": "bearer", "description": "An OAuth access token (as Streamloop's MCP server uses). Each operation needs the scope named in its `x-scope`: streamloop:read ⊂ streamloop:write ⊂ streamloop:destructive (403 INSUFFICIENT_SCOPE)." }
+    },
+    "parameters": {
+      "id": { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^scn_" }, "description": "The scene's id (`scn_…`)" },
+      "path": { "name": "path", "in": "path", "required": true, "schema": { "type": "string" }, "description": "A resource path, slashes and all: `frame/intro`, `frame/intro/title`, `source/data/headlines/rows`, `component/LowerThird`, `script/show.ts`, a type (`element/Text`) or a list (`frame/*`)", "example": "frame/intro" },
+      "workspace": { "name": "X-Workspace-Id", "in": "header", "schema": { "type": "string" }, "description": "The workspace to act in. Required with an API key; otherwise the session's own." },
+      "idempotency": { "name": "Idempotency-Key", "in": "header", "schema": { "type": "string", "maxLength": 200 }, "description": "Retry safely: the key (per caller, workspace, method and path) is taken before the request runs, and its first answer is replayed for 24 hours, with `Idempotency-Replayed: true` — a repeat sent while the first still runs waits for it. The same key with a different body is 422 IDEMPOTENCY_KEY_REUSED. A 5xx is not kept: the retry runs." },
+      "ifMatch": { "name": "If-Match", "in": "header", "schema": { "type": "string" }, "description": "The revision (ETag) you read — one, or a comma-separated list of which any current one matches — compared strongly (a weak `W/\"…\"` tag never matches): refused with 412 PRECONDITION_FAILED if the resource changed since or no longer exists (the problem carries `currentRevision`, null when it is gone, and for a layer `frameRevision`: either is taken). A layer takes its own revision or that of the `frame/<id>` it is in. `*`: it must exist. Checked atomically with the write: of two writes sent at once with the same revision, one lands and the other is 412." },
+      "ifNoneMatch": { "name": "If-None-Match", "in": "header", "schema": { "type": "string" }, "description": "`*`: create only — 412 if the resource exists already. On a GET, the ETag you hold (a weak `W/\"…\"` one too): 304 when nothing changed." },
+      "limit": { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 }, "description": "Items per page, 1 to 100 (default 20)" },
+      "cursor": { "name": "cursor", "in": "query", "schema": { "type": "string" }, "description": "page.nextCursor from the previous page" }
+    },
+    "responses": {
+      "Answer": { "description": "The answer", "headers": { "ETag": { "schema": { "type": "string" }, "description": "The resource's revision" }, "Draft-Revision": { "schema": { "type": "string" }, "description": "The whole draft's revision (`draftRevision`), what publish and discard take" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Answer" } } } },
+      "Problem": { "description": "An RFC 7807 problem; branch on `code`", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
+      "BadRequest": { "description": "BAD_REQUEST (400): a body or query that can't be parsed (not JSON); INVALID_INPUT (422): one that parses but doesn't fit — an unknown or missing field or query parameter, a value of the wrong type or out of range. `detail` names the field", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
+      "NotFound": { "description": "NOT_FOUND: no such scene (in this workspace) or resource — `detail` says what there is", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
+      "Conflict": { "description": "CONFLICT (a revision given in the body moved — `revisions` of a remove, a discard's draftRevision; `currentRevision`; If-Match is 412 instead), EDIT_NO_MATCH (the text to replace isn't there; the closest line is quoted), EDIT_AMBIGUOUS (it is there more than once), IN_USE (something uses it; named), CONFIRM_REQUIRED (on air: send confirm: true to accept it), STALE_PUBLISH (a version was published after this draft's base, or after the version a revert saw: `publishedVersion`, `basedOn`, `reverted`, `publishedVersionIsRevert`; after a revert, publish with overwritePublished or discard the draft to match it), DRAFT_NOT_SAVED (the server doesn't have those edits yet; retry)", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
+      "PreconditionFailed": { "description": "PRECONDITION_FAILED: the If-Match revision is not the resource's now (`currentRevision`), or If-Match: * and it doesn't exist", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
+      "Refused": { "description": "CHECK_FAILED / SCENE_INVALID: refused by the check the studio runs, nothing changed — `errors` lists each problem with its line or path", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } }
+    },
+    "schemas": {
+      "Problem": {
+        "type": "object", "required": ["type", "title", "status", "code", "detail"],
+        "properties": {
+          "type": { "type": "string", "const": "about:blank" },
+          "title": { "type": "string" },
+          "status": { "type": "integer" },
+          "code": { "type": "string", "description": "Stable — branch on it: BAD_REQUEST (400), WORKSPACE_REQUIRED (400), UNAUTHENTICATED (401), INSUFFICIENT_SCOPE (403), WORKSPACE_FORBIDDEN (403), NOT_FOUND (404), METHOD_NOT_ALLOWED (405), READ_ONLY (422), CONFLICT (409; currentRevision), EDIT_NO_MATCH (409), EDIT_AMBIGUOUS (409), IN_USE (409), CONFIRM_REQUIRED (409), STALE_PUBLISH (409; publishedVersion, basedOn, reverted, publishedVersionIsRevert), REVISION_REQUIRED (MCP only: a set or remove of an existing resource without its revision), NOT_PUBLISHED (409), SCENE_IN_USE (409), DRAFT_NOT_SAVED (409), SCENE_OFFLINE (409), SCENE_REFUSED (409), INGEST_KEY_REVOKED (409), CAMERA_PULL_GONE (409), SECRETS_FULL (409), PRECONDITION_FAILED (412; currentRevision), TOO_LARGE (413), UNSUPPORTED_MEDIA_TYPE (415), INVALID_INPUT (422), IDEMPOTENCY_KEY_REUSED (422), CHECK_FAILED (422), SCENE_INVALID (422), CAMERA_INVALID (422), CAMERA_PRIVATE_ADDRESS (422), SECRET_MISSING (422), RATE_LIMITED (429), CAMERA_TEST_BUSY (429), INTERNAL (500), NOT_SUPPORTED (501), UNAVAILABLE (502 or 503), INGEST_UNAVAILABLE (503), CAMERAS_UNAVAILABLE (503), SECRETS_UNAVAILABLE (503), SCENE_TIMEOUT (504)" },
+          "detail": { "type": "string", "description": "What happened and what to do" },
+          "errors": { "type": "array", "description": "Each problem, when there are several (a check's findings)", "items": { "type": "object", "properties": { "line": { "type": "integer" }, "path": { "type": "string" }, "node": { "type": "string" }, "message": { "type": "string" } }, "additionalProperties": true } },
+          "currentRevision": { "type": ["string", "null"], "description": "CONFLICT / PRECONDITION_FAILED: the resource's revision now; null when it no longer exists" }
+        }
+      },
+      "Page": { "type": "object", "required": ["hasMore"], "properties": { "nextCursor": { "type": ["string", "null"] }, "hasMore": { "type": "boolean" } } },
+      "SceneSummary": { "type": "object", "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "version": { "type": "integer", "description": "The published version; 0: never published" }, "publishedAt": { "type": ["string", "null"], "format": "date-time" }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" } } },
+      "Scene": {
+        "allOf": [{ "$ref": "#/components/schemas/SceneSummary" }, { "type": "object", "properties": {
+          "workspaceId": { "type": "string" },
+          "draftRevision": { "type": "string", "description": "GET: the draft's revision now, what publish and discard take" },
+          "streams": { "type": "array", "description": "The streams that play it", "items": { "type": "object", "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "state": { "type": "string" } } } }
+        } }]
+      },
+      "Answer": {
+        "type": "object", "description": "What a draft operation answers. `summary` says what happened in a sentence; `value` is what a read found.",
+        "properties": {
+          "summary": { "type": "string" },
+          "value": { "description": "What was read: a resource (with `revision` and `children`), a type (what it takes), or a list", "anyOf": [{ "$ref": "#/components/schemas/FrameResource" }, { "$ref": "#/components/schemas/LayerResource" }, { "$ref": "#/components/schemas/TableResource" }, { "$ref": "#/components/schemas/ComponentResource" }, { "$ref": "#/components/schemas/ControlResource" }, { "$ref": "#/components/schemas/CodeResource" }, { "$ref": "#/components/schemas/TypeDescription" }, { "type": "array", "items": { "$ref": "#/components/schemas/ListEntry" } }] },
+          "path": { "type": "string", "description": "A write: where it is stored (a new id is made unique)" },
+          "revision": { "type": "string", "description": "A write: the resource's new revision" },
+          "frameRevision": { "type": "string", "description": "A layer's write: the revision of the `frame/<id>` it is in (If-Match takes either)" },
+          "created": { "type": "boolean" },
+          "diff": { "type": "string", "description": "A write: a unified diff of what changed" },
+          "removed": { "type": "array", "items": { "type": "string" } },
+          "draftRevision": { "type": "string", "description": "The whole draft as this answer saw it: publish takes it" }
+        },
+        "additionalProperties": true
+      },
+      "Child": { "type": "object", "properties": { "path": { "type": "string" }, "description": { "type": "string" }, "as": { "type": "string", "enum": ["image"] }, "args": { "type": "object", "additionalProperties": { "type": "string" } } } },
+      "FrameResource": { "type": "object", "description": "frame/<id>", "required": ["path", "revision", "code"], "properties": { "path": { "type": "string" }, "revision": { "type": "string" }, "name": { "type": "string" }, "description": { "type": "string" }, "transition": { "type": "object", "properties": { "kind": { "type": "string", "enum": ["cut", "fade", "slide", "wipe", "dip"] }, "ms": { "type": "number" } } }, "code": { "type": "string", "description": "Its <Frame>…</Frame> element in JSX (stored formatted)" }, "sound": { "type": "string", "description": "What it sends to air (read-only)" }, "children": { "type": "array", "items": { "$ref": "#/components/schemas/Child" } } } },
+      "LayerResource": { "type": "object", "description": "frame/<id>/<layer>", "required": ["path", "type"], "properties": { "path": { "type": "string" }, "revision": { "type": "string" }, "type": { "type": "string", "description": "Text, Stack, Image, … or a component" }, "props": { "type": "object", "additionalProperties": true }, "name": { "type": "string" }, "description": { "type": "string" }, "ancestors": { "type": "array", "items": { "type": "string" } }, "children": { "type": "array", "items": { "$ref": "#/components/schemas/Child" } } } },
+      "TableResource": { "type": "object", "description": "source/data/<id> (other sources are like it, with their kind's fields)", "properties": { "path": { "type": "string" }, "revision": { "type": "string" }, "name": { "type": "string" }, "description": { "type": "string" }, "connector": { "type": "string", "enum": ["inline", "file", "csv", "json", "xlsx", "sheets", "html"] }, "url": { "type": "string" }, "file": { "type": "string", "description": "A file table's file (an upload's id)" }, "pick": { "type": "string" }, "headers": { "type": "object", "additionalProperties": { "type": "string" } }, "refreshSeconds": { "type": "number" }, "rows": { "type": "array", "items": { "type": "object" } }, "schema": { "type": "object", "description": "Its columns (inferred from the rows)" }, "children": { "type": "array", "items": { "$ref": "#/components/schemas/Child" } } } },
+      "ComponentResource": { "type": "object", "description": "component/<id>", "properties": { "path": { "type": "string" }, "revision": { "type": "string" }, "description": { "type": "string" }, "props": { "type": "object", "description": "name → JSON Schema" }, "takesChildren": { "type": "boolean" }, "tsx": { "type": "string" }, "builtin": { "type": "boolean" } } },
+      "ControlResource": { "type": "object", "description": "control/<id>: an operator input", "properties": { "path": { "type": "string" }, "revision": { "type": "string" }, "type": { "type": "string", "enum": ["toggle", "text", "number", "select", "button"] }, "label": { "type": "string" }, "description": { "type": "string" }, "group": { "type": "string" }, "default": {} } },
+      "CodeResource": { "type": "object", "description": "script/show.ts, script/state.ts", "properties": { "path": { "type": "string" }, "revision": { "type": "string" }, "code": { "type": "string" } } },
+      "TypeDescription": { "type": "object", "description": "A type (frame, source/data, element/Text, …): what it takes", "properties": { "path": { "type": "string" }, "description": { "type": "string" }, "props": { "type": "object", "additionalProperties": true }, "style": { "type": "object", "additionalProperties": { "type": "string" } }, "example": {}, "subtypes": { "type": "array", "items": { "type": "object" } } } },
+      "ListEntry": { "type": "object", "properties": { "path": { "type": "string" }, "name": { "type": "string" }, "description": { "type": "string" } }, "additionalProperties": true },
+      "Published": { "type": "object", "properties": { "version": { "type": "integer", "description": "The published version after this call. On a dry run it is unchanged (0: never published) and the draft would become the next one" }, "summary": { "type": "string", "description": "What happened and what comes next, in a sentence" }, "publishedAt": { "type": ["string", "null"], "format": "date-time", "description": "null on a dry run of a scene never published" }, "unchanged": { "type": "boolean", "description": "The draft was what is published already: no new version" }, "changes": { "type": "array", "items": { "type": "string" }, "description": "What changed since the previous version, as resource paths (`change frame/main/title props.value`, `add source/data/hn`)" }, "dryRun": { "type": "boolean", "description": "Only checked: nothing was published" }, "notes": { "type": "array", "items": { "type": "string" }, "description": "What to know about this publish: edits a pinned draftRevision left in the draft, a revert's draft" }, "stale": { "type": "boolean", "description": "The draftRevision was an older one: the draft has changed since, and those changes are not published" } } },
+      "Version": { "type": "object", "properties": { "version": { "type": "integer" }, "publishedAt": { "type": "string", "format": "date-time" }, "publishedBy": { "type": ["string", "null"] } } },
+      "Control": {
+        "type": "object", "required": ["op"], "additionalProperties": false,
+        "description": "The same names as the MCP's control_scene. Checked before anything else (422 INVALID_INPUT for an unknown op, a field the op doesn't take, a missing target, controlId or sourceId, a value of the wrong type): goFrame { target, transition? }, next { target? }, setControl { controlId, value? }, setData { sourceId, rows }, skip { sourceId? }; any of them with streamId.",
+        "properties": {
+          "streamId": { "type": "string", "description": "Which stream (stream_…), when more than one plays the scene" },
+          "op": { "type": "string", "enum": ["goFrame", "setControl", "setData", "next", "skip"] },
+          "target": { "type": "string", "description": "goFrame (required), next: which one to take or cue, by the id in its path `frame/<id>`; next without it clears the cue" },
+          "transition": { "description": "goFrame: a kind, or { kind, ms } (default: the frame's own)", "oneOf": [{ "type": "string", "enum": ["cut", "fade", "slide", "wipe", "dip"] }, { "type": "object", "required": ["kind"], "additionalProperties": false, "properties": { "kind": { "type": "string", "enum": ["cut", "fade", "slide", "wipe", "dip"] }, "ms": { "type": "integer", "minimum": 0 } } }, { "type": "null" }] },
+          "controlId": { "type": "string", "description": "setControl: the control's id (as in `control/<id>`)" },
+          "value": { "type": ["boolean", "string", "number", "null"], "description": "setControl: its new value (a toggle true or false, a select one of its options; none for a button)" },
+          "sourceId": { "type": "string", "description": "setData: the table's id (as in `source/data/<id>`); skip: the playlist source's id (default: the first)" },
+          "rows": { "type": "array", "items": { "type": "object" }, "description": "setData: the table's rows" }
+        }
+      },
+      "IngestKey": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "`ingkey_…`, for these routes" },
+          "sceneId": { "type": "string" }, "sourceId": { "type": "string" },
+          "key": { "type": "string", "description": "Only when created or rotated" },
+          "keyPrefix": { "type": "string" },
+          "status": { "type": "string", "enum": ["active", "revoked"] },
+          "live": { "type": "boolean" },
+          "rtmpUrl": { "type": "string" }, "rtmpsUrl": { "type": "string" }, "srtUrl": { "type": "string", "description": "Only when created or rotated" },
+          "ingestdId": { "type": "string", "description": "The ingest service's id for the key (`ingk_…`, not the key's own `ingkey_…` id): what the draft's rtmp or srt source names as its ingest.key" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Secret": { "type": "object", "properties": { "name": { "type": "string" }, "updatedAt": { "type": "string", "format": "date-time" } } },
+      "CameraInput": { "type": "object", "properties": { "sourceId": { "type": "string" }, "url": { "type": "string", "description": "rtsp://host[:port]/path, without credentials" }, "username": { "type": "string" }, "password": { "type": "string" }, "transport": { "type": "string", "enum": ["tcp", "udp"] }, "camera": { "type": "string", "description": "Test only: a saved camera whose settings fill what is left out" } } },
+      "Camera": { "type": "object", "properties": { "id": { "type": "string" }, "sceneId": { "type": "string" }, "sourceId": { "type": "string" }, "url": { "type": "string" }, "username": { "type": "string" }, "hasPassword": { "type": "boolean" }, "transport": { "type": "string" }, "pullId": { "type": "string" }, "probe": { "type": "object", "additionalProperties": true, "description": "The last test's result" }, "hasSnapshot": { "type": "boolean" }, "updatedAt": { "type": "string", "format": "date-time" } } }
+    }
+  }
+}

@@ -138,7 +138,7 @@
               {
                 "group": "Endpoints",
                 "openapi": {
-                  "source": "https://api.streamloop.app/v1/scenes/openapi.json",
+                  "source": "api-reference/scenes-openapi.json",
                   "directory": "api-reference/scenes-api"
                 }
               }
