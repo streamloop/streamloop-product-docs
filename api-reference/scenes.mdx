@@ -168,7 +168,7 @@ Every resource has a `revision`, sent as its `ETag`. Use it so you never overwri
 
 | Header | Effect |
 | --- | --- |
-| `If-Match: <revision>` on `PUT`, `PATCH`, `DELETE` | Refused with `412 PRECONDITION_FAILED` if the resource changed since or no longer exists. The problem carries `currentRevision` (`null` when it's gone). A layer also accepts the revision of the frame it's in. The comparison is strong: a weak `W/"…"` tag never matches. |
+| `If-Match: <revision>` on `PUT`, `PATCH`, `DELETE` | Refused with `412 PRECONDITION_FAILED` if the resource changed since or no longer exists. The problem carries `currentRevision` (`null` when it's gone). A layer also accepts the revision of the frame it's in. A comma-separated list matches if any tag is current. The comparison is strong: a weak `W/"…"` tag never matches. |
 | `If-Match: *` | The resource must exist. |
 | `If-None-Match: *` on `PUT` | Create only: `412` if it already exists. |
 | `If-None-Match: <revision>` on `GET` | `304 Not Modified` if nothing changed. |
