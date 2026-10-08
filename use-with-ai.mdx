@@ -45,7 +45,7 @@ The server address is `https://mcp.streamloop.app/mcp`.
     Install the Streamloop plugin. It adds the MCP server and the Streamloop skills (see below):
 
     ```text
-    /plugin marketplace add streamloop/live-scene
+    /plugin marketplace add streamloop/skills
     /plugin install streamloop@streamloop
     ```
 
@@ -74,9 +74,13 @@ You can see and revoke connected assistants any time in the **Connected Apps** p
 
 The assistant works in one [workspace](/workspaces-and-team) at a time, your default one at first. If you're in several, say which one: "switch to my team's workspace". If a loop you know exists doesn't show up, the assistant is probably in another workspace.
 
-## The Claude Code plugin
+## The Streamloop skills
 
-The Streamloop plugin for Claude Code adds the MCP server plus **skills**: instructions the assistant loads when a task needs them. They're the same guides Streamloop's own studio [AI assistant](/scenes/ai-assistant) uses.
+The skills are instructions an assistant loads when a task needs them, the same guides Streamloop's own studio [AI assistant](/scenes/ai-assistant) uses. They are public at [github.com/streamloop/skills](https://github.com/streamloop/skills). Claude Code gets them with the plugin above; any other agent that reads skills gets them with:
+
+```bash
+npx skills add streamloop/skills
+```
 
 | Skill | Helps with |
 | --- | --- |

@@ -31,14 +31,14 @@ Add the server URL to any MCP-capable client. On first use the client opens Stre
     Add a custom connector (MCP server) with the URL `https://mcp.streamloop.app/mcp`, and authorize when prompted.
   </Tab>
   <Tab title="Claude Code">
-    Install the Streamloop plugin, which adds the server and the Streamloop skills:
+    Install the Streamloop plugin, which adds the server and the [Streamloop skills](https://github.com/streamloop/skills):
 
     ```text
-    /plugin marketplace add streamloop/live-scene
+    /plugin marketplace add streamloop/skills
     /plugin install streamloop@streamloop
     ```
 
-    Or add only the server: `claude mcp add --transport http streamloop https://mcp.streamloop.app/mcp`.
+    Or add only the server: `claude mcp add --transport http streamloop https://mcp.streamloop.app/mcp`. Any other agent that reads skills: `npx skills add streamloop/skills`.
   </Tab>
   <Tab title="Custom client">
     Point any MCP client that speaks **Streamable HTTP** at `https://mcp.streamloop.app/mcp`. An unauthenticated request gets a `401` with a `WWW-Authenticate` challenge, and the server publishes RFC 9728 protected-resource metadata at `https://mcp.streamloop.app/.well-known/oauth-protected-resource`. Standards-compliant clients find the authorization server from there. See [Authentication](/api-reference/authentication).
