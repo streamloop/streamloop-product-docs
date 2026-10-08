@@ -1,0 +1,52 @@
+---
+title: "Stream to Twitch 24/7"
+sidebarTitle: "Twitch"
+description: "Loop pre-recorded video to Twitch around the clock with Streamloop: copy your Twitch stream key, add it as a destination and go live."
+keywords:
+  ["24/7 twitch stream", "twitch stream key", "stream pre-recorded video to twitch", "loop video on twitch"]
+icon: "twitch"
+---
+
+Streamloop streams to Twitch with your **stream key**. A stream key is the password that lets a
+streaming tool send video to your channel.
+
+## Get your stream key from Twitch
+
+In the Twitch **Creator Dashboard**, go to **Settings → Stream** and copy your **Primary Stream
+Key**. Twitch keys start with `live_`.
+
+<Warning>
+  Your stream key gives full control of your channel's live stream. Don't share it. If it leaks,
+  reset it in Twitch and update the destination in Streamloop.
+</Warning>
+
+## Add Twitch to your loop
+
+<Steps>
+  <Step title="Open the destination picker">
+    In your loop's **General** tab, click **Connect a destination** (or **Add destination** if your
+    loop has a destination list).
+  </Step>
+  <Step title="Choose Twitch">
+    Pick **Twitch · RTMP stream key**. Streamloop fills in Twitch's **RTMP URL** for you.
+  </Step>
+  <Step title="Paste the key">
+    Paste your **Stream key**, give the destination a **Display name**, and click
+    **Save destination**.
+  </Step>
+  <Step title="Go live">
+    Start the loop. Your title and category stay in Twitch: set them in the Creator Dashboard.
+  </Step>
+</Steps>
+
+## Good to know
+
+- **Twitch ends broadcasts after about 48 hours.** Streamloop reconnects before that happens, so
+  your loop keeps running. On Twitch, it shows up as a new broadcast.
+- **Video only.** Streamloop sends the video and sound. Your stream title, category and viewer
+  counts stay in Twitch.
+- **Quality.** Streamloop keeps the stream within what Twitch accepts, so you don't need to set a
+  bitrate. Twitch takes up to 1080p: if the destination says it doesn't accept the loop's
+  resolution, lower the resolution in the loop's **General** tab.
+- **Twitch and YouTube together.** Add both to one loop with
+  [multistream](/platform/multistream).

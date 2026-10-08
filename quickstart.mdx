@@ -1,75 +1,89 @@
 ---
 title: "Quickstart"
 sidebarTitle: "Quickstart"
-description: "Go from a video file to a 24/7 live stream in minutes — upload HDR or SDR video, choose quality up to 4K 60fps, connect a destination, and go live."
+description: "Go from a video file to a 24/7 live stream in minutes: create a loop, add your video, connect a destination and go live, with no OBS and no PC left running."
 keywords:
   ["streamloop quickstart", "24/7 live stream setup", "stream pre-recorded video to youtube", "loop video live stream"]
 icon: "rocket"
 ---
 
-This guide takes you from a video file to a live 24/7 stream. The whole thing takes a few minutes,
-and your free trial credits cover it — no card required.
+This guide takes you from a video file to a live 24/7 stream. It takes a few minutes.
 
 <Info>
-  You'll need a **video file** and a **destination** to stream to (a YouTube channel, or a stream
-  key from Twitch, Facebook Live, Kick, TikTok, or any RTMP platform).
+  You need a **video file** and a **destination** to stream to: a YouTube channel, or a stream key
+  from Twitch, Facebook, Kick, X, TikTok or any other RTMP platform.
 </Info>
 
-## Go live in six steps
+A *loop* is a stream you set up once and leave running. There are two kinds:
+
+- **Pre-recorded video** loops play your uploaded videos on repeat, at up to 4K 60fps. This guide
+  covers them.
+- **Scene** loops are live shows you design in the studio, with live inputs, web pages and
+  overlays. Scenes are in private beta. See [Scenes](/scenes/overview).
+
+## Your first stream
+
+When you sign up at [streamloop.app](https://streamloop.app), Streamloop walks you through your
+first loop step by step. You pick the type, a name and a destination, connect the destination, pick
+the quality, add your media and choose how to pay. The steps below follow the same path from the
+dashboard, for your next loops.
 
 <Steps>
-  <Step title="Create a free account">
-    Sign up at [streamloop.app](https://streamloop.app) with Google or an email address. New
-    accounts get **free credits** — enough to run a real stream for a few hours — with no card
-    required. See [Billing](/billing) for how credits work.
-  </Step>
   <Step title="Create a loop">
-    A *loop* is a stream you set up once and run 24/7. From your dashboard, click
-    **Create new loop**, give it a **Stream name** (for example, `Nature sounds`), and click
-    **Create**. You'll land in the loop editor.
+    On the **Loops** page, click **New loop**. Enter a **Loop name** (for example `Nature sounds`)
+    and pick a **Resolution** and **Framerate** (24, 30 or 60 fps). If you see a choice between
+    **Pre-recorded video** and **Scene**, click **Choose video**. Otherwise click **Create loop**.
+    The loop opens on its **Playlist** tab.
   </Step>
   <Step title="Add your video">
-    Open the **Playlist** tab, and on the **Video** tab click **Upload** to add a file (MP4, MOV,
-    or MKV, up to 10 GB), or **From URL** to import from Google Drive, a YouTube link, or a direct
-    link. Add more videos to build a playlist, or an **Audio** track to play over the video — see
-    [Build and schedule your playlist](/build-and-schedule-your-playlist).
-  </Step>
-  <Step title="Pick your quality">
-    In the **General** tab, choose a **resolution** (720p, 1080p, 1440p, or 4K) and **frame rate**
-    (24, 25, 30, or 60fps). Streamloop also supports HDR video. Your destination and playback
-    devices must support HDR for viewers to see it. Higher quality costs more per hour —
-    `1080p` at `30fps` suits most streams. See the price breakdown in [Billing](/billing).
+    On **Video**, click **Upload** to add a file (MP4, MOV or MKV, up to 1.5 GB on a free account
+    or 5 GB once you've paid), or **From URL** to import from Google Drive, YouTube or a direct
+    link. Add more videos to build a playlist, or add an **Audio** track to play over the video.
+    See [Build and schedule your playlist](/build-and-schedule-your-playlist).
   </Step>
   <Step title="Connect a destination">
-    Still in **General**, click **Connect a destination**. Pick **YouTube · Connect channel** to
-    link your channel with Google, or choose **RTMP stream key** to paste a key from YouTube,
-    Twitch, or any other RTMP platform.
+    Open the **General** tab. Under **Destination**, click **Connect a destination**. Pick
+    **YouTube · Connect channel** to link your channel with Google, or pick a platform (or
+    **Custom RTMP**) and paste its stream key. See [YouTube](/platform/youtube),
+    [Twitch](/platform/twitch) and [Other RTMP platforms](/platform/other-rtmp).
+  </Step>
+  <Step title="Check the quality">
+    Still in **General**, **Output quality** shows the resolution (720p, 1080p, 1440p or 2160p (4K))
+    and frame rate (24, 25, 30 or 60 fps). Higher quality costs more per hour, and 1080p at 30fps
+    suits most streams. Streamloop also streams HDR video when your destination supports it. See
+    [Billing](/billing) for prices.
   </Step>
   <Step title="Go live">
     When the loop shows **Stream is idle**, click **Start stream**. Your video starts looping to
-    your destination within a minute or two. To go live later instead, turn on **Schedule loop**
-    and enter a time like `tomorrow 9am`, then click **Schedule the stream**.
+    your destination within a minute or two. To go live later, turn on **Schedule loop**, enter a
+    time like `tomorrow 9am`, and click **Schedule the stream**.
   </Step>
 </Steps>
 
 <Check>
-  Your loop is live. It keeps streaming 24/7 from the cloud — you can close your laptop and it
-  stays on air.
+  Your loop is live. It keeps streaming 24/7 from the cloud. You can close your laptop and it stays
+  on air.
 </Check>
+
+<Note>
+  Streaming uses credits from your balance. Eligible new accounts can claim free credits to try
+  Streamloop. You can also start a monthly plan with a \$1 trial, or top up as you go. See
+  [Billing](/billing).
+</Note>
 
 ## What's next
 
 <Columns cols={2}>
   <Card title="Build and schedule your playlist" icon="list-video" href="/build-and-schedule-your-playlist">
-    Reorder videos, shuffle, add a separate audio track, and edit the playlist while you're live.
+    Reorder videos, shuffle, add an audio track, repeat the schedule and edit while live.
   </Card>
-  <Card title="Build a music or lofi channel" icon="music" href="/lofi-music-channel">
-    Loop a background video with a separate audio playlist for a 24/7 music channel.
+  <Card title="Stream to several platforms" icon="share-2" href="/platform/multistream">
+    Send one loop to up to 5 destinations at once.
   </Card>
   <Card title="How billing works" icon="credit-card" href="/billing">
-    Pay-as-you-go credits, the price per resolution, and what happens if you run low.
+    Credits, monthly plans, the price per resolution and what happens if you run low.
   </Card>
   <Card title="Reliability" icon="shield-check" href="/reliability-guarantees">
-    How Streamloop keeps your stream live around the clock and recovers on its own.
+    How Streamloop keeps your stream live around the clock and what to check if it stops.
   </Card>
 </Columns>

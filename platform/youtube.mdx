@@ -23,7 +23,8 @@ With a managed connection, Streamloop talks to YouTube through the official YouT
 
 <Steps>
   <Step title="Open the destination picker">
-    In your loop's **General** tab, find the destination section and click **Connect a destination**.
+    In your loop's **General** tab, find the destination section and click **Connect a destination**
+    (or **Add destination** if your loop has a destination list).
   </Step>
   <Step title="Choose YouTube (Connect channel)">
     In the provider grid, pick **YouTube · Connect channel** (marked **recommended**). This starts
@@ -43,6 +44,20 @@ With a managed connection, Streamloop talks to YouTube through the official YouT
     ready to set up the broadcast.
   </Step>
 </Steps>
+
+<Note>
+  A loop can stream to one YouTube channel at a time. To reach other platforms as well, add them as
+  extra destinations. See [Multistream](/platform/multistream).
+</Note>
+
+## Backup stream
+
+YouTube accepts a primary and a backup feed for the same broadcast. In the loop's **General** tab,
+turn on **Run backup stream for higher redundancy** under **Backup stream**. Streamloop then sends
+your stream to both at the same time, so YouTube can switch to the backup if the primary drops.
+
+The backup stream **doubles your streaming cost** while live. It's off by default, and it's only
+offered for YouTube destinations. See [Billing](/billing#backup-stream).
 
 ## Set up the broadcast
 

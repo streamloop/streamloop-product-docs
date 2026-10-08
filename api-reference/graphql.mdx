@@ -55,6 +55,29 @@ query ListStreams($first: Int = 20, $after: Cursor, $where: StreamWhereInput) {
 }
 ```
 
+## Errors
+
+A refusal is an entry of the top-level `errors` array. Its `extensions` has the shape of the schema's `ApiError` type: `code` is a value of the `ErrorCode` enum, and some codes add a `reason` or a `cause`. Branch on `code`, never on the message.
+
+```json
+{
+  "errors": [
+    {
+      "message": "The stream is live; stop it before changing its destinations.",
+      "path": ["addStreamDestination"],
+      "extensions": { "code": "STREAM_LIVE" }
+    }
+  ],
+  "data": null
+}
+```
+
+The codes are the same ones the REST API answers, and the [conventions table](/api-reference/conventions#codes-and-statuses) gives each its meaning and HTTP status. Introspect `ErrorCode` for the full list with a one-line description each.
+
+## Deprecation
+
+A retiring field or argument is marked `@deprecated(reason: "…")` with what replaces it, and stays for at least 90 days. Introspection shows the mark (`includeDeprecated: true`), and the [conventions page](/api-reference/conventions#deprecation-and-sunset) lists what is retiring and when. Additions never break a query that worked.
+
 ## Choosing GraphQL vs REST vs MCP
 
 <Columns cols={3}>

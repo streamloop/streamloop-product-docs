@@ -1,0 +1,107 @@
+---
+title: "Smart order"
+sidebarTitle: "Smart order"
+description: "Describe in plain words how your playlist should play (an intro first, a jingle every few songs, the news on the hour) and Streamloop builds the order for you."
+keywords:
+  ["smart playlist order", "playlist rules", "intro then loop", "jingle every few songs", "scheduled breaks", "top of the hour news"]
+icon: "wand-sparkles"
+---
+
+**In order** and **Shuffle** cover most channels. When you need a rule that's a little smarter, use
+**Smart order**: you describe the order in plain words, and an AI assistant builds it. You preview
+the result, then apply it to your playlist.
+
+This page assumes you already have a playlist. See
+[Build and schedule your playlist](/build-and-schedule-your-playlist).
+
+## What you can ask for
+
+The dashboard suggests a few to start from:
+
+- "Play the first video once as an intro, then play the rest."
+- "Play everything in order, then shuffle on every loop after."
+- "Shuffle, but keep several videos between any repeats."
+- "Play the longest videos first, then the shorter ones."
+- "Always end each loop with the same outro video."
+
+You can also combine rules, refer to videos by name, or use the time of day ("play the morning
+clips before noon").
+
+## Create a smart order
+
+<Steps>
+  <Step title="Open Loop behavior">
+    In your loop, open the **Playlist** tab. Under **Loop behavior**, choose **Smart order**.
+  </Step>
+  <Step title="Describe the order">
+    Under **Describe how you want your playlist to play**, pick a suggestion or type your own. Be
+    specific about edge cases. "Play the intro once at the start, then loop the rest in order,
+    never repeating the intro" works better than "play the intro first."
+  </Step>
+  <Step title="Refine it">
+    The assistant replies in a chat. If it asks a question, answer it. To change the result, send
+    another message: **Refine — add a rule, swap, or start over**.
+  </Step>
+  <Step title="Check the preview">
+    The preview lists the items in the order they will play. After you change your playlist, click
+    **Refresh preview** to see the new order.
+  </Step>
+  <Step title="Apply it">
+    Click **Apply this order**. On a live loop, the new order takes over at the next item, with no
+    restart.
+  </Step>
+</Steps>
+
+<Note>
+  Each message to the Smart order assistant costs about **\$0.005** in credits.
+</Note>
+
+### If an item is missing
+
+If your order mentions a video by name that isn't in the playlist, Streamloop still applies it and
+shows **Order advisories** that list what's missing. Add the item, rename it to match, or ask the
+assistant for a version that doesn't need it.
+
+## Scheduled breaks
+
+<Info>
+  Scheduled breaks are rolling out gradually and may not be available in your workspace yet.
+</Info>
+
+A scheduled break interrupts the playlist at a set time, even in the middle of a long video. For
+example: "Play the news video at the top of every hour." At the break, the current video stops, the
+break plays, and then the interrupted video continues from where it stopped.
+
+- Describe the break as part of your order. The preview shows each break under **Scheduled breaks**.
+- Times follow your own time zone.
+- Breaks work on the **video** playlist only.
+
+To run breaks only during part of the day (for example 06:00–22:00), combine a smart order with a
+[repeating schedule](/build-and-schedule-your-playlist#repeat-a-schedule).
+
+## Use it on the audio playlist
+
+You can apply a smart order to the **Audio** playlist instead, for example "shuffle the songs and
+play the station jingle every three or four tracks." A loop can use one smart order at a time, on
+either its video or its audio playlist. To move it, click **Revert** on the playlist that has it
+first.
+
+## Turn it off or remove it
+
+- **Revert** takes the smart order off this playlist. The playlist goes back to a built-in order,
+  and the saved order stays in **Your saved orders** for later.
+- **Remove order** deletes a saved order. You can't remove an order that a playlist still uses:
+  switch those playlists to a different order first.
+
+## If something goes wrong while you're live
+
+A smart order can never take your stream off the air. If the order hits a problem while picking the
+next item, that slot plays in the playlist's natural order instead. Streamloop tries the smart order
+again after a few items.
+
+## Next steps
+
+- [Build and schedule your playlist](/build-and-schedule-your-playlist): uploads, loop behavior and
+  editing while live.
+- [Build a 24/7 music or lofi channel](/lofi-music-channel): a smart order with jingles suits radio
+  channels.

@@ -6,15 +6,18 @@ icon: "plug"
 keywords: ["streamloop api", "rest api", "mcp server", "graphql", "24/7 stream api", "live stream api"]
 ---
 
-The Streamloop API lets you do everything the dashboard does — upload media, build playlists, connect destinations, and start, schedule, and monitor 24/7 loop streams — from your own code or an AI agent.
+The Streamloop API lets you do what the dashboard does — upload media, build playlists, connect destinations, and start, schedule, and monitor 24/7 loop streams — from your own code or an AI agent. The Scenes API builds and runs live, designed scenes (private beta).
 
 Everything runs on the same backend as the app, so a stream you create over the API behaves exactly like one created in the dashboard.
 
-## Three ways to integrate
+## Ways to integrate
 
-<Columns cols={3}>
+<Columns cols={2}>
   <Card title="REST API" icon="code" href="/api-reference/quickstart">
     A clean, versioned HTTP API at `api.streamloop.app/v1`. Best for scripts, servers, and backends. Start here.
+  </Card>
+  <Card title="Scenes API" icon="layers" href="/api-reference/scenes">
+    Build, check, publish and run scenes over HTTP at `api.streamloop.app/v1/scenes`. Private beta.
   </Card>
   <Card title="MCP server" icon="bot" href="/api-reference/mcp/overview">
     A Model Context Protocol server for AI agents (Claude, ChatGPT, and others) to call Streamloop as tools.
@@ -24,7 +27,7 @@ Everything runs on the same backend as the app, so a stream you create over the 
   </Card>
 </Columns>
 
-The REST API and the MCP server are both thin, curated layers over the same GraphQL core, so they expose the same capabilities — pick whichever fits how you're building.
+The REST API, the Scenes API and the MCP server cover the same capabilities and share the same accounts, workspaces and scopes — pick whichever fits how you're building.
 
 ## Base URLs
 
@@ -32,6 +35,8 @@ The REST API and the MCP server are both thin, curated layers over the same Grap
 | --- | --- |
 | REST API | `https://api.streamloop.app/v1` |
 | OpenAPI document | `https://api.streamloop.app/v1/openapi.json` |
+| Scenes API | `https://api.streamloop.app/v1/scenes` |
+| Scenes OpenAPI document | `https://api.streamloop.app/v1/scenes/openapi.json` |
 | MCP server (Streamable HTTP) | `https://mcp.streamloop.app/mcp` |
 | GraphQL | `https://api.streamloop.app/graphql` |
 | Authorization server | `https://auth.streamloop.app` |
@@ -46,7 +51,13 @@ The REST API and the MCP server are both thin, curated layers over the same Grap
     Upload video and audio (direct or from a link), then build, reorder, copy, and publish playlists.
   </Card>
   <Card title="Destinations" icon="radio">
-    List your destinations and add custom RTMP targets.
+    Add custom RTMP targets, and send one stream to up to 5 destinations ([multistream](/platform/multistream), rolling out).
+  </Card>
+  <Card title="Scenes" icon="layers">
+    Write a scene's frames as JSX, get a picture of each, publish, and put it on a stream. Private beta.
+  </Card>
+  <Card title="Workspaces" icon="users">
+    List your workspaces and act in one with the `X-Workspace-Id` header.
   </Card>
   <Card title="Billing" icon="credit-card">
     Read your credit balance, usage analytics, and invoices, and create top-up links (card or crypto).
@@ -60,7 +71,7 @@ The REST API and the MCP server are both thin, curated layers over the same Grap
     Get an API key or set up OAuth — see [Authentication](/api-reference/authentication).
   </Step>
   <Step title="Learn the conventions">
-    Pagination, errors, and versioning are consistent across every endpoint — see [Conventions](/api-reference/conventions).
+    Workspaces, pagination, retries, rate limits and errors are consistent across every endpoint — see [Conventions](/api-reference/conventions).
   </Step>
   <Step title="Make your first call">
     Follow the [Quickstart](/api-reference/quickstart) to go from an API key to a live stream with `curl`.

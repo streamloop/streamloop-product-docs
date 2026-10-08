@@ -1,0 +1,76 @@
+---
+title: "Data and sheets"
+sidebarTitle: "Data and sheets"
+description: "Feed live data into a Streamloop scene from Google Sheets, Excel or CSV files, JSON feeds and web pages, and show it in text, scoreboards and lists that update on air."
+keywords:
+  ["google sheets live stream overlay", "live data on stream", "json feed overlay", "scoreboard from spreadsheet", "dynamic stream graphics"]
+icon: "sheet"
+---
+
+<Info>
+  Scenes are in private beta. See [Scenes](/scenes/overview) to request access.
+</Info>
+
+A **table** brings rows of data into your show: scores, headlines, schedules, prices, names. Layers
+show a table's values, and when the data changes, the stream updates on its own.
+
+## Kinds of table
+
+| Kind | Where the rows come from |
+| --- | --- |
+| **Google Sheets** | A shared Google Sheet. The first row is the header. |
+| **Excel or CSV** | A spreadsheet file you upload. |
+| **JSON feed** | A URL that returns JSON, checked on a schedule. |
+| **Web page data** | Elements picked from a web page with a CSS selector, one row per match. |
+| **Formula** | A table computed in TypeScript from other tables and controls. It recomputes when they change. |
+
+## Connect a Google Sheet
+
+<Steps>
+  <Step title="Share the sheet">
+    In Google Sheets, click **Share** and set General access to **Anyone with the link** as a
+    **Viewer**. Make sure the first row holds the column names.
+  </Step>
+  <Step title="Add the table">
+    In the studio's **Sources & layers**, click **Add source** and pick **Google Sheets**. Paste the
+    **Sheet URL**, and pick the **Tab** if the sheet has several.
+  </Step>
+  <Step title="Pick how often it refreshes">
+    Under **Refresh**, choose how often Streamloop reads the sheet, such as every 30 seconds.
+  </Step>
+  <Step title="Show it in a frame">
+    Bind a layer to the table: a text layer can show one cell, and a list or grid can repeat for every
+    row. The [AI assistant](/scenes/ai-assistant) can do this for you.
+  </Step>
+  <Step title="Publish">
+    [Publish](/scenes/build-a-scene#publish) the scene. From then on, edits in the sheet reach the
+    stream at the next refresh.
+  </Step>
+</Steps>
+
+## Use a JSON feed or web page
+
+For a **JSON feed**, enter the URL and how often to check it. For **Web page data**, enter the page
+URL and a CSS selector: each element it matches becomes a row. Both must be public `http://` or
+`https://` addresses.
+
+If the feed needs a key, add it under **Headers** (for example `Authorization: Bearer …`) or in the
+URL.
+
+## Keep keys secret
+
+A key you type into a table's headers or URL (like `?api_key=…`) is saved as a **secret** of the
+scene. The table keeps only the secret's name, so the key:
+
+- is never part of the show or its published versions,
+- is never shown again, to you or your teammates, and
+- is never seen by the AI assistant.
+
+To change a key, type it again. A changed key reaches the running stream the next time you publish.
+Streamloop refuses to publish a show that has a raw key in a header like `Authorization` instead of
+a secret.
+
+## Update data while live
+
+You don't have to wait for a refresh. In the **Live** panel, **Send to air** pushes a table's
+current rows to the running show at once. See [Show control](/scenes/show-control).

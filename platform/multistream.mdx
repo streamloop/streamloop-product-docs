@@ -1,0 +1,92 @@
+---
+title: "Stream to several platforms at once"
+sidebarTitle: "Multistream"
+description: "Send one Streamloop loop to up to 5 destinations at the same time, such as YouTube, Twitch and Kick, from a single encode."
+keywords:
+  ["multistream", "stream to youtube and twitch at the same time", "restream 24/7", "multiple rtmp destinations", "simulcast pre-recorded video"]
+icon: "share-2"
+---
+
+<Info>
+  Multistream is rolling out gradually. If your loop doesn't show **Add destination**, or you see
+  "Streaming to more than one destination isn't enabled for this workspace yet", it isn't available
+  in your workspace yet.
+</Info>
+
+With multistream, one loop streams to **up to 5 destinations** at the same time, for example your
+YouTube channel, Twitch and Kick. Streamloop encodes the stream once and sends the same picture
+and sound to each destination.
+
+## Add destinations
+
+<Steps>
+  <Step title="Stop the loop">
+    You can only add destinations while the loop is stopped. A live or scheduled loop shows
+    **Stop the loop to add destinations**.
+  </Step>
+  <Step title="Open the destination list">
+    In the loop's **General** tab, find **Destinations**.
+  </Step>
+  <Step title="Add each destination">
+    Click **Add destination** and pick a saved destination, or connect a new one. Repeat for each
+    platform, up to 5.
+  </Step>
+  <Step title="Start the loop">
+    Start or schedule the loop as usual. Each destination connects on its own.
+  </Step>
+</Steps>
+
+<Note>
+  A loop can stream to **only one YouTube channel**. The other destinations can be any RTMP
+  platform. See [Twitch](/platform/twitch) and [Other RTMP platforms](/platform/other-rtmp).
+</Note>
+
+While the loop is stopped, each destination's menu lets you **Disable** or **Enable** it, or
+**Remove from loop**. A disabled destination stays in the list but receives nothing and costs
+nothing.
+
+## What it costs
+
+The first destination is included in the streaming rate. Each extra destination that's turned on
+adds a flat fee while the loop is live: **\$3.50, \$6.00, \$8.00 or \$12.50 per 30 days** at 720p,
+1080p, 1440p or 4K. The loop's **Costs** panel shows the total before you start. See
+[Billing](/billing#extra-destinations).
+
+## While the loop is live
+
+You can't add destinations or turn one back on while the loop is live or scheduled. You can **Stop
+sending** to a destination. It goes off the air at once, and the others keep streaming. You can turn
+it back on after the loop stops.
+
+You can't stop sending to the only destination still on air. Stop the loop instead.
+
+### Destination status
+
+Each destination shows its own status, and the loop shows a summary such as **2 of 3 destinations
+live**:
+
+| Status | What it means |
+| --- | --- |
+| **Live** | The destination is receiving your stream. |
+| **Connecting** | Streamloop is connecting to the destination. |
+| **Not connecting** | The connection dropped or was refused. Streamloop keeps retrying. |
+| **Retrying later** | The platform keeps closing the connection. Streamloop waits, then tries again. |
+| **Paused** | A planned reconnect to the platform. It resumes on its own. |
+| **Off** | You disabled the destination or stopped sending to it. |
+| **Off after error** | The platform refused the stream for good (for example, a wrong stream key), so Streamloop turned this destination off. The others keep streaming. |
+
+When a destination turns off after an error, the row says why and what to fix, such as "Check the
+stream key and any username or password in this destination." Fix it, and turn the destination back
+on after the loop stops.
+
+## Quality across destinations
+
+Every destination gets the same encode, so Streamloop picks settings that **all** of them accept.
+For example, if one platform takes a lower bitrate, every destination gets that bitrate. If a
+destination can't take the loop's resolution, the row says so: lower the resolution, or remove
+that destination.
+
+## Good to know
+
+- Onboarding sets up one destination. Add more from the loop's **General** tab afterwards.
+- A YouTube destination can also run a [backup stream](/platform/youtube#backup-stream).

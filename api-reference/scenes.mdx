@@ -1,0 +1,221 @@
+---
+title: "Scenes API"
+sidebarTitle: "Overview"
+description: "Build, check, publish and run Streamloop scenes over HTTP: edit a scene's draft as resources at paths, get a picture of a frame, publish it, and put it on a stream."
+icon: "layers"
+keywords: ["streamloop scenes api", "scene api", "live graphics api", "stream overlay api", "jsx scene", "publish scene api"]
+---
+
+<Info>
+  Scenes are in private beta. See [Scenes](/scenes/overview) to request access.
+</Info>
+
+The Scenes API builds and runs [scene loops](/scenes/overview) from your own code. It edits a scene the same way the studio and its [AI assistant](/scenes/ai-assistant) do: every change is built and checked as the studio checks it, and studios open on the scene see it at once. Nothing reaches viewers until you publish.
+
+| | |
+| --- | --- |
+| Base URL | `https://api.streamloop.app/v1/scenes` |
+| OpenAPI document | `https://api.streamloop.app/v1/scenes/openapi.json` (the endpoint pages below are generated from it) |
+| Authentication | `X-API-Key` with `X-Workspace-Id`, or an OAuth bearer token. See [Authentication](/api-reference/authentication). |
+
+It follows the same [conventions](/api-reference/conventions) as the REST API: problem documents with a stable `code`, cursor pages, `Idempotency-Key`, and `RateLimit-*` headers (600 requests a minute).
+
+## The model
+
+A **scene** (id `scn_…`) is what a stream plays when it isn't a video loop. Its **draft** holds resources, each at a path:
+
+| Path | What it is |
+| --- | --- |
+| `frame/<id>` | One frame: a background and layers. One is on air at a time, and the stream cuts between them. Read and written as `{ name, description?, transition?, code }`, where `code` is its `<Frame>…</Frame>` element in JSX. |
+| `frame/<id>/<layer>` | One layer of a frame, with its props. |
+| `source/<kind>/<id>` | Something the scene reads: a camera (`rtsp`), an input (`rtmp`, `srt`), a `file`, a `playlist`, a `web` page, a table (`data`) or a formula over tables (`derived`). |
+| `control/<id>` | A switch, text or choice the operator sets while the scene runs. |
+| `component/<id>` | A reusable element (a lower third, a score bug) written in TSX. |
+| `script/show.ts`, `script/state.ts` | The scene's behaviour, and the shape of its state, in TypeScript. |
+| `tokens` | Named colours, fonts and sizes. |
+| `element/<Type>` | The building blocks (`Text`, `Image`, `Video`, `Rect`, `Stack`, `Ticker`, …) with every prop. Read-only. |
+
+`GET /v1/scenes/{id}/resources` lists the kinds. A path ending in `/*` lists one kind, for example `frame/*` or `element/*`. Each answer names the paths to read next in `children`.
+
+All resources go through four operations:
+
+| Operation | HTTP |
+| --- | --- |
+| Read | `GET /v1/scenes/{id}/resources/{path}` |
+| Create or replace | `PUT /v1/scenes/{id}/resources/{path}` (JSON, or the code alone as `text/jsx`, `text/tsx` or `text/typescript`) |
+| Change part | `PATCH /v1/scenes/{id}/resources/{path}`: exact text edits `[{ "old": "…", "new": "…" }]`, or a JSON merge patch |
+| Remove | `DELETE /v1/scenes/{id}/resources/{path}`, or `POST /v1/scenes/{id}/remove` for several at once |
+
+`POST /v1/scenes/{id}/probe` fetches a URL once, changing nothing, to show what a table would read from it.
+
+## Walkthrough
+
+This builds a one-frame scene, looks at it, publishes it and puts it on a stream. Set your key and workspace first. `GET /v1/workspaces` lists your workspaces.
+
+```bash
+export SL_KEY="sl_your_key_here"
+export SL_WS="wksp_…"
+H=(-H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS")
+```
+
+<Steps>
+  <Step title="Create a scene">
+    ```bash
+    curl "${H[@]}" -X POST https://api.streamloop.app/v1/scenes \
+      -H "Content-Type: application/json" \
+      -d '{ "name": "Lobby" }'
+    ```
+
+    The answer is `201` with the scene. Note its `id` (`scn_…`). Its `version` is `0`: nothing is published yet.
+
+    ```bash
+    export SCN=https://api.streamloop.app/v1/scenes/scn_…
+    ```
+  </Step>
+
+  <Step title="Write a frame">
+    Send the frame's code as JSX. The frame's id is its path, here `frame/intro`:
+
+    ```bash
+    curl "${H[@]}" -X PUT "$SCN/resources/frame/intro" \
+      -H "Content-Type: text/jsx" \
+      --data-binary '<Frame background={{ type: "gradient", from: "#05070F", to: "#1B2A4A", angle: 160 }}>
+      <Text id="title" value="Starting soon" x={96} y={54} style={{ fontSize: 72, color: "#FFFFFF" }} />
+    </Frame>'
+    ```
+
+    A new resource answers `201`, with `revision` (also the `ETag` header), a `diff` of what changed, and `draftRevision`. If the code doesn't build or check, the answer is `422 CHECK_FAILED`, nothing changes, and `errors` lists every problem with its line.
+
+    `GET "$SCN/resources/element/Text"` shows every prop `Text` takes, with an example.
+  </Step>
+
+  <Step title="Look at it">
+    Get a picture of the frame as it goes on air:
+
+    ```bash
+    curl "${H[@]}" "$SCN/resources/frame/intro?as=image" -o intro.png
+    ```
+
+    With `Accept: image/png` (or no `Accept`) the answer is a PNG, at most 1280 px wide. With `Accept: application/json` you get the picture as a data URL plus what drew (`drawn`) and what's wrong (`issues`): text outside title-safe, overlapping or too small, or a bound table with no rows. Add `overlay=grid` or `overlay=ids` to line things up, and `at=<ms>` to draw a moment after the frame goes on air.
+  </Step>
+
+  <Step title="Check, then publish">
+    Publishing takes the `draftRevision` of the draft you checked. It's required: `GET /v1/scenes/{id}` and every resource answer carry the current one, also as the `Draft-Revision` header. So you publish exactly the draft you saw, even if someone edits it meanwhile. A dry run checks the whole scene and lists what would change, publishing nothing:
+
+    ```bash
+    curl "${H[@]}" -X POST "$SCN/publish" \
+      -H "Content-Type: application/json" \
+      -d '{ "draftRevision": "…", "dryRun": true }'
+    ```
+
+    Then publish:
+
+    ```bash
+    curl "${H[@]}" -X POST "$SCN/publish" \
+      -H "Content-Type: application/json" \
+      -H "Idempotency-Key: publish-lobby-1" \
+      -d '{ "draftRevision": "…" }'
+    ```
+
+    ```json
+    {
+      "version": 1,
+      "publishedAt": "2026-10-07T12:00:00Z",
+      "changes": ["add frame/intro"],
+      "notes": []
+    }
+    ```
+
+    `changes` lists what changed since the previous version, as resource paths. If the draft changed after your `draftRevision`, those edits aren't published: the answer says so with `"stale": true` and a note. A draft equal to what's published makes no version (`"unchanged": true`).
+
+    If someone published after the version your draft is based on, publishing it would take their version back. The answer is `409 STALE_PUBLISH` with `publishedVersion`, `basedOn` and `reverted` (what would be undone). Read the draft again and publish its new `draftRevision`, or send `"overwritePublished": <publishedVersion>` to replace that version on purpose. If that version is a revert (`publishedVersionIsRevert: true`), reading the draft again doesn't help: send `overwritePublished` to publish your draft over it, or discard the draft (`POST /discard`) to keep the reverted version.
+  </Step>
+
+  <Step title="Put it on a stream">
+    Use the REST API to make a stopped stream play the scene's published version, then start it:
+
+    ```bash
+    curl "${H[@]}" -X PUT https://api.streamloop.app/v1/streams/stream_…/scene \
+      -H "Content-Type: application/json" \
+      -d '{ "sceneId": "scn_…" }'
+
+    curl "${H[@]}" -X POST https://api.streamloop.app/v1/streams/stream_…/start
+    ```
+
+    The stream opens on the scene's first frame. While the stream runs, `PUT …/scene` answers `409 STREAM_LIVE`: stop it first. `{ "sceneId": null }` goes back to the stream's video playlist.
+  </Step>
+</Steps>
+
+## On air
+
+Once a scene is on air:
+
+- **Publishing changes what viewers see at once.** So `POST /publish` (and `POST /revert`) on a scene a running stream plays answers `409 CONFIRM_REQUIRED`, naming the streams. Send it again with `"confirm": true` to accept that. `confirm` always means "I accept what the refusal named".
+- `GET /v1/scenes/{id}/live` says what's on air on each stream: under `onAir`, the frame on air (`frame`), the next one cued (`next`), control values and source status.
+- `POST /v1/scenes/{id}/live` acts like an operator, with the same names as the MCP's `control_scene`: `goFrame` with `target` (take `frame/<target>` to air, with a transition such as `fade`), `next` (cue a frame), `setControl` with `controlId` and `value`, `setData` with `sourceId` and `rows` (replace a table's rows) and `skip` with `sourceId` (a playlist source's next item); `streamId` when several streams play it. A transition is a kind (`cut`, `fade`, `slide`, `wipe`, `dip`) or `{ "kind": …, "ms": … }` with `ms` a whole number of 0 or more; anything else, or a `streamId` that isn't a string, is `422 INVALID_INPUT`, said before what's published is looked at. A `504 SCENE_TIMEOUT` may or may not have been applied: send an `Idempotency-Key` (one per action) and retry with the same key and body, and it applies at most once. Without one, don't retry a `skip` or a button blind: read `GET …/live` first. The action is checked first against what's published (a frame, control, table or playlist source that isn't there, or a toggle given `"yes"`, is `422 INVALID_INPUT`); then it answers `409 SCENE_OFFLINE` when no stream plays the scene.
+- Any resource (or picture) reads from a published version with `?version=<n>` or `?version=published`; the answer carries a `Scene-Version` header and no `Draft-Revision`.
+- `GET /versions` lists published versions; `POST /revert` with `{ "version": n, "expectedVersion": <the latest published version you saw> }` publishes an old one again as the next version (`409 STALE_PUBLISH` if someone published since; after a revert, publishing the draft asks for `overwritePublished`, or discard the draft to match); `POST /discard` with `{ "draftRevision": "…" }` puts the draft back to what's published and makes that version the draft's base, so the next unchanged publish answers `unchanged` and an edited one is the next version. Add `"dryRun": true` first to see what would be lost (`lost`). If the draft changed after your `draftRevision`, nothing is discarded (`409 CONFLICT`). Both take the precondition as `If-Match` instead (`"<draftRevision>"` on discard, `"<expectedVersion>"` on revert): then a mismatch is `412` with the same code and details.
+
+Live inputs and keys:
+
+- `POST /v1/scenes/{id}/ingest-keys` with `{ "sourceId": "…" }` gives an encoder such as OBS its RTMP, RTMPS and SRT addresses for an `rtmp` or `srt` source. The key is in that answer only.
+- `PUT /v1/scenes/{id}/secrets/{name}` saves an API key that a table sends as `$secret:<name>`. It's sealed and never shown again.
+- `/v1/scenes/{id}/cameras` adds and tests IP cameras. See [Cameras](/scenes/cameras).
+
+## Concurrency
+
+Every resource has a `revision`, sent as its `ETag`. Use it so you never overwrite someone's newer edit, whether from another script or a person in the studio:
+
+| Header | Effect |
+| --- | --- |
+| `If-Match: <revision>` on `PUT`, `PATCH`, `DELETE` | Refused with `412 PRECONDITION_FAILED` if the resource changed since or no longer exists. The problem carries `currentRevision` (`null` when it's gone). A layer also accepts the revision of the frame it's in; a Stack's or Group's revision changes when anything below it changes, so a stale one can't remove what was added there since. A comma-separated list matches if any tag is current. The comparison is strong: a weak `W/"…"` tag never matches. |
+| `If-Match: *` | The resource must exist. |
+| `If-None-Match: *` on `PUT` | Create only: `412` if it already exists. |
+| `If-None-Match: <revision>` on `GET` | `304 Not Modified` if nothing changed. |
+
+On `412`, read the resource again, reapply your change and retry.
+
+## Idempotency
+
+Send an `Idempotency-Key` header on `POST` and `PATCH` to retry safely. The first answer to a key (per caller, method and path) is replayed for 24 hours, with `Idempotency-Replayed: true`; a retry that arrives while the first request is still running waits for its answer instead of running again. Reusing a key with a different request body is `422 IDEMPOTENCY_KEY_REUSED`. Use it on `publish`, `revert` and `live` in particular: after a `504 SCENE_TIMEOUT`, retry with the same key.
+
+## Errors
+
+Errors are [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) problem documents (`application/problem+json`) with a stable `code`:
+
+```json
+{
+  "type": "about:blank",
+  "title": "Unprocessable Entity",
+  "status": 422,
+  "code": "CHECK_FAILED",
+  "detail": "…",
+  "errors": [
+    { "line": 2, "path": "frame/intro", "message": "…" }
+  ]
+}
+```
+
+| Status | Codes |
+| --- | --- |
+| 400 | `BAD_REQUEST` (a body or query that can't be parsed), `WORKSPACE_REQUIRED` |
+| 401 | `UNAUTHENTICATED` |
+| 403 | `INSUFFICIENT_SCOPE`, `WORKSPACE_FORBIDDEN` |
+| 404 | `NOT_FOUND` |
+| 409 | `CONFLICT` (with `currentRevision`), `EDIT_NO_MATCH`, `EDIT_AMBIGUOUS`, `IN_USE`, `CONFIRM_REQUIRED`, `STALE_PUBLISH` (with `publishedVersion`, `basedOn`, `reverted`), `DRAFT_NOT_SAVED`, `NOT_PUBLISHED`, `SCENE_IN_USE`, `SCENE_OFFLINE`, `INGEST_KEY_REVOKED` |
+| 412 | `PRECONDITION_FAILED` (with `currentRevision`); a stale `If-Match` on `publish`, `discard`, `revert` or `DELETE /v1/scenes/{id}` keeps its code (`STALE_PUBLISH`, `CONFLICT`) with this status. A header and a body precondition that disagree are `422 INVALID_INPUT` |
+| 413 | `TOO_LARGE` |
+| 415 | `UNSUPPORTED_MEDIA_TYPE`: a body that is neither JSON nor code, or code sent as the wrong kind for its path |
+| 422 | `INVALID_INPUT` (a field, value or query parameter that doesn't fit; `detail` names it), `READ_ONLY` (a field or sub-path that can't be changed that way — a layer's type, children or repeat, a table's rows), `CHECK_FAILED`, `SCENE_INVALID` (with `errors`), `IDEMPOTENCY_KEY_REUSED`, `CAMERA_INVALID`, `SECRET_MISSING` |
+| 429 | `RATE_LIMITED` |
+| 5xx | `INTERNAL`, `UNAVAILABLE`, `SCENE_TIMEOUT`: retry with backoff |
+
+The full list is in the `Problem` schema of the [OpenAPI document](https://api.streamloop.app/v1/scenes/openapi.json).
+
+## Scopes
+
+With an OAuth token, every `GET` and `probe` needs `streamloop:read`. Edits, publishing and live control need `streamloop:write`. Deleting a scene, discarding its draft, and revoking or deleting an ingest key, camera or secret need `streamloop:destructive`.
+
+<Tip>
+  Prefer to describe the scene in words? Connect an AI agent to the [MCP server](/api-reference/mcp/overview). Its `scene_get`, `scene_set`, `scene_remove` and `scene_probe` tools are these operations.
+</Tip>

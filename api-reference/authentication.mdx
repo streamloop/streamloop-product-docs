@@ -10,7 +10,7 @@ Every Streamloop API request is tied to your account. There are two ways to auth
 - **API keys** — a single secret you send on each request. Best for your own scripts, servers, and backends.
 - **OAuth 2.1** — an authorization-code flow with PKCE. Best for third-party apps and AI agents that act on a user's behalf (this is what the [MCP server](/api-reference/mcp/overview) uses).
 
-Both work on the REST and GraphQL APIs. The MCP server uses OAuth.
+Both work on the REST, Scenes and GraphQL APIs. The MCP server uses OAuth.
 
 ## API keys
 
@@ -20,6 +20,8 @@ Send your key in the `x-api-key` header:
 curl https://api.streamloop.app/v1/me \
   -H "x-api-key: sl_your_key_here"
 ```
+
+An API key carries no workspace. On every other route, also send the workspace in `X-Workspace-Id` (from `GET /v1/workspaces`), or the request answers `400 WORKSPACE_REQUIRED`. See [Workspaces](/api-reference/conventions#workspaces).
 
 Streamloop API keys are prefixed with `sl_`. Create, list, and revoke them from your account settings in the [dashboard](https://streamloop.app/loops) — see [API tokens and connected apps](/account-access) for a step-by-step walkthrough.
 
@@ -63,10 +65,12 @@ OAuth access tokens are limited to the scopes you request. Ask for the least you
 
 | Scope | Grants |
 | --- | --- |
-| `streamloop:read` | Read streams, destinations, playlists, and billing status |
-| `streamloop:write` | Create and control streams, destinations, and playlists |
-| `streamloop:destructive` | Delete streams and destinations |
-| `streamloop:billing` | Read billing and usage, and create top-up links |
+| `streamloop:read` | Read streams, destinations, playlists, uploads, workspaces, scenes, and billing status |
+| `streamloop:write` | Create and control streams, destinations, playlists, uploads, and scenes |
+| `streamloop:destructive` | Delete streams, uploads, and scenes; discard a scene's draft; revoke a scene's ingest keys and secrets |
+| `streamloop:billing` | Create top-up links and crypto deposit addresses (REST API only) |
+
+Each scope includes the ones above it: `destructive` includes `write`, and `write` includes `read`. `read` also covers the credit balance and usage. The MCP server asks only for `read`, `write` and `destructive`.
 
 <Tip>
   Read-only automation (dashboards, monitoring) only needs `streamloop:read`. Add `streamloop:write` to create and control streams, and request `streamloop:destructive` or `streamloop:billing` only when an integration genuinely deletes resources or moves money.

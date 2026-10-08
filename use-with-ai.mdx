@@ -1,0 +1,134 @@
+---
+title: "Use Streamloop with AI"
+sidebarTitle: "Use with AI"
+description: "Connect Claude, ChatGPT, Cursor or Claude Code to Streamloop and run your loops, destinations and scenes by asking in plain words."
+icon: "bot"
+keywords: ["streamloop ai", "streamloop mcp", "claude streamloop", "chatgpt streamloop", "ai live stream", "claude code plugin", "24/7 stream with ai"]
+---
+
+You can connect an AI assistant such as Claude, ChatGPT or Cursor to your Streamloop account. Then you describe what you want ("loop these videos to YouTube every weekday at 9") and the assistant does the steps for you: uploads, playlists, destinations, schedules and scenes.
+
+The assistant connects through Streamloop's **MCP server**. MCP (Model Context Protocol) is the standard way AI apps use outside tools. You sign in with your Streamloop account, so there's no key to copy, and you choose what the assistant may do.
+
+<Info>
+  Scenes are in private beta. The scene features below work only on accounts with scene access. See [Scenes](/scenes/overview) to request access.
+</Info>
+
+## Connect your assistant
+
+The server address is `https://mcp.streamloop.app/mcp`.
+
+<Tabs>
+  <Tab title="Claude">
+    1. In Claude, open **Settings → Connectors**.
+    2. Choose **Add custom connector** and enter `https://mcp.streamloop.app/mcp`.
+    3. Connect it, sign in to Streamloop, and approve the access.
+  </Tab>
+  <Tab title="ChatGPT">
+    1. In ChatGPT, add a custom connector (MCP server) with the URL `https://mcp.streamloop.app/mcp`.
+    2. Sign in to Streamloop when ChatGPT asks, and approve the access.
+  </Tab>
+  <Tab title="Cursor">
+    Add the server to your Cursor MCP settings (`.cursor/mcp.json` in a project, or `~/.cursor/mcp.json` for all projects):
+
+    ```json
+    {
+      "mcpServers": {
+        "streamloop": { "url": "https://mcp.streamloop.app/mcp" }
+      }
+    }
+    ```
+
+    Cursor opens the Streamloop sign-in page the first time it connects.
+  </Tab>
+  <Tab title="Claude Code">
+    Install the Streamloop plugin. It adds the MCP server and the Streamloop skills (see below):
+
+    ```text
+    /plugin marketplace add streamloop/skills
+    /plugin install streamloop@streamloop
+    ```
+
+    Then run `/mcp`, pick **streamloop**, and sign in.
+  </Tab>
+  <Tab title="Other apps">
+    Any app that supports remote MCP servers over Streamable HTTP with OAuth works. Add `https://mcp.streamloop.app/mcp` and sign in when asked. Technical details are in the [MCP server reference](/api-reference/mcp/overview).
+  </Tab>
+</Tabs>
+
+### Choose what the assistant may do
+
+When you sign in, you approve one or more permissions:
+
+| Permission | The assistant can |
+| --- | --- |
+| **Read** (`streamloop:read`) | See your loops, destinations, playlists, uploads, scenes and credit balance. |
+| **Write** (`streamloop:write`) | Also create and change them, and start and stop loops. |
+| **Delete** (`streamloop:destructive`) | Also delete loops, uploads and scenes for good. |
+
+Give it only what it needs. Read-only is enough for questions like "how many credits do I have left?". The assistant can't buy credits or spend money: top-ups happen in the [dashboard](https://streamloop.app/loops).
+
+You can see and revoke connected assistants any time in the **Connected Apps** panel. See [API tokens and connected apps](/account-access).
+
+### Workspaces
+
+The assistant works in one [workspace](/workspaces-and-team) at a time, your default one at first. If you're in several, say which one: "switch to my team's workspace". If a loop you know exists doesn't show up, the assistant is probably in another workspace.
+
+## The Streamloop skills
+
+The skills are instructions an assistant loads when a task needs them, the same guides Streamloop's own studio [AI assistant](/scenes/ai-assistant) uses. They are public at [github.com/streamloop/skills](https://github.com/streamloop/skills). Claude Code gets them with the plugin above; any other agent that reads skills gets them with:
+
+```bash
+npx skills add streamloop/skills
+```
+
+| Skill | Helps with |
+| --- | --- |
+| `running-24-7-loops` | Uploading or importing videos and music, filling and ordering playlists, scheduling (once, daily, weekly), starting, and changing a live loop's playlist without going off air. |
+| `streaming-to-destinations` | YouTube (connected channel or stream key), Twitch, Facebook, Kick, X, TikTok, LinkedIn, Telegram or any RTMP server, and multistreaming to several at once. |
+| `managing-workspaces-and-credits` | Which workspace is in use, switching workspaces, the credit balance and how long loops can keep running, and past usage. |
+| `building-scenes` | A scene from nothing to on air: overlays, lower thirds, score bugs, tickers, weather or news corners, live data, cameras. |
+| `composing-frames` | The layout of a scene's frames: colour, type and broadcast conventions, from a description or a reference picture, checked with a picture. |
+| `animating-frames` | How layers enter and leave, tweens, rolling numbers and how a frame transitions in. |
+| `shaping-data` | Tables from typed rows, files, URLs, Google Sheets or web pages, and formulas that filter, sort or join them. |
+| `binding-live-data` | Showing live values in layers: show state, table rows, now playing, controls, the clock. |
+| `writing-components` | Reusable lower thirds, score bugs and cards. |
+| `scripting-the-show` | Timers, reactions to data and feeds, the operator's controls (toggles, buttons, choices) and state. |
+| `handling-media` | RTMP/SRT feeds, guest and IP cameras, files, web pages, playlists, fallbacks when a feed drops, and sound levels. |
+| `coding-web-pages` | A web page written in code (React, Tailwind) shown as a layer, for things the built-in elements can't make. |
+| `operating-live-scenes` | Running a scene on air: taking frames to air, setting controls, live corrections, and stream keys for OBS or vMix. |
+
+Other assistants get the same tools without the skills. They still work, because the server explains its tools to every assistant.
+
+## What to ask
+
+Some prompts to start with:
+
+- "Make a 24/7 lofi loop from these three videos and stream it to my YouTube channel."
+- "Add a second YouTube destination." (or "Also send it to Twitch")
+- "Stream my loop every weekday from 9am to 5pm New York time."
+- "Why won't my stream start?"
+- "How many credits do I have, and how long will my loops keep running?"
+- "Build a weather lower third for my scene loop." (scenes, private beta)
+- "Show the top 5 rows of this Google Sheet as a ticker." (scenes, private beta)
+- "Put up the guest's lower third now." (scenes, private beta)
+- "Cut to the intermission frame with a fade." (scenes, private beta)
+
+## What to expect
+
+- **It asks before anything irreversible.** Deleting a loop, an upload or a scene, discarding a scene's draft, or revoking a stream key needs an explicit confirmation. The assistant should tell you what will happen and wait for your yes.
+- **It asks before changing what viewers see.** Starting a loop puts video in front of the public. Publishing a change to a scene that's on air needs a confirmation too, because viewers see it at once.
+- **Scene edits stay in the draft until you publish.** If you have the studio open on the scene, you see the assistant's edits live. Nothing goes on air until the assistant publishes, and it can do a dry run first that lists what would change.
+- **Some steps need you.** Connecting a YouTube account needs you to open a Google consent link. For a local file, the assistant may hand you an upload link if it can't upload the file itself.
+- **Some limits still apply.** A loop has at most 5 destinations and at most one YouTube channel. You can't add or remove destinations while a loop is live, but you can turn one off. [Multistream](/platform/multistream) is rolling out, so a second destination may not be available on your workspace yet.
+
+## Next steps
+
+<Columns cols={2}>
+  <Card title="MCP server reference" icon="bot" href="/api-reference/mcp/overview">
+    Endpoint, permissions, errors and how scene editing works.
+  </Card>
+  <Card title="All MCP tools" icon="wrench" href="/api-reference/mcp/tools">
+    Every tool, what it does and the permission it needs.
+  </Card>
+</Columns>

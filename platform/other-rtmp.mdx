@@ -1,0 +1,66 @@
+---
+title: "Stream to Facebook, Kick, X, TikTok and other RTMP platforms"
+sidebarTitle: "Other RTMP platforms"
+description: "Add Facebook, Kick, X, TikTok, LinkedIn, Telegram or any custom RTMP server as a Streamloop destination: where to find each stream key and what to watch out for."
+keywords:
+  ["rtmp stream key", "stream to facebook live 24/7", "kick stream key", "tiktok live rtmp", "custom rtmp server", "24/7 stream to any platform"]
+icon: "radio"
+---
+
+Any platform that accepts an **RTMP** (or encrypted **RTMPS**) stream works with Streamloop. RTMP is
+the standard way streaming tools send live video. The platform gives you two things:
+
+- a **server URL** (it starts with `rtmp://` or `rtmps://`), and
+- a **stream key**, a password that lets a streaming tool send video to your account.
+
+## Add the destination
+
+<Steps>
+  <Step title="Open the destination picker">
+    In your loop's **General** tab, click **Connect a destination** (or **Add destination** if your
+    loop has a destination list).
+  </Step>
+  <Step title="Pick the platform">
+    Pick the platform from the list, or **Custom RTMP** for anything else. For Facebook, X and Kick,
+    Streamloop fills in the **RTMP URL** for you.
+  </Step>
+  <Step title="Paste the key">
+    Paste the **Stream key** (and the **RTMP URL** if it's empty), give the destination a
+    **Display name**, and click **Save destination**.
+  </Step>
+</Steps>
+
+<Tip>
+  If a platform gives you one long URL that ends in the key, split it: everything up to the last
+  `/` is the RTMP URL, and the last part is the stream key.
+</Tip>
+
+## Where each platform shows its key
+
+| Platform | Where to find the URL and key | Watch out for |
+| --- | --- | --- |
+| **Facebook** | Live Producer → pick the page or profile → Streaming software → Stream key | Keys are single-use by default. Turn on the persistent stream key, or the destination stops working after the first broadcast. |
+| **Kick** | Creator Dashboard → Settings → Stream Key | |
+| **X** | Media Studio → Producer → Sources | A key tied to one broadcast ends with it. Use a persistent source if your account has one. |
+| **TikTok** | LIVE Studio, or Go LIVE with third-party streaming enabled | The URL and key change for every LIVE session, so a long-running loop needs a new key each time. Third-party streaming isn't available on every account. |
+| **LinkedIn** | Create a live event with a third-party encoder. The URL and key appear shortly before it starts. | The key expires with the event. |
+| **Telegram** | In the channel or group, start a live stream and choose **Stream with** | Telegram issues a new key each time the video chat is recreated. |
+| **Anything else** | Look for "stream with your own software" or "OBS settings" | |
+
+For Twitch, see [Twitch](/platform/twitch). For YouTube, see [YouTube](/platform/youtube).
+
+<Note>
+  For a 24/7 loop, always use a **persistent** key where the platform offers one. A key that belongs
+  to a single broadcast or session stops working when that broadcast ends.
+</Note>
+
+## Good to know
+
+- **Video only.** Streamloop sends the video and sound. Titles, comments and audience settings stay
+  on the platform.
+- **Quality.** YouTube accepts the widest range of video formats. For other platforms, Streamloop
+  sends a widely supported format and keeps within each platform's limits, so you don't need to set
+  a bitrate.
+- **Several platforms at once.** Add up to 5 destinations to one loop with
+  [multistream](/platform/multistream).
+- Stream keys are encrypted at rest and never shown again after you save them.

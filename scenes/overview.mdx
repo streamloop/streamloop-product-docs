@@ -1,0 +1,99 @@
+---
+title: "Scenes"
+sidebarTitle: "Overview"
+description: "Scenes turn a Streamloop loop into a live show: live inputs, web pages, live data, overlays and transitions, designed in the studio with an AI assistant and streamed 24/7 from the cloud."
+keywords:
+  ["live scenes", "cloud production studio", "24/7 live show", "cloud obs alternative", "live overlays", "rtmp input to youtube"]
+icon: "layers"
+---
+
+<Info>
+  Scenes are in **private beta**. Access is by invitation: when you create a loop, choose **Request
+  early access** under **Scene** and tell us what you'll build. Our team reviews every request within
+  24 hours. Once you're approved, **Scene** shows up as a loop type.
+</Info>
+
+A **Scene** loop is a live show you design in the Streamloop studio. Instead of playing videos one
+after another, it lays out everything on one canvas: your playlists, live camera or encoder feeds,
+web pages, text, logos and live data. Streamloop renders the show in the cloud around the clock, with
+no OBS and no PC left running.
+
+## Video loop or scene loop?
+
+| | Pre-recorded video | Scene |
+| --- | --- | --- |
+| Upload and loop videos, background music, smart order | Yes | Yes |
+| Maximum quality | 4K · 60 fps | 1080p · 60 fps |
+| Live inputs: RTMP, SRT, RTSP, HLS | No | Yes |
+| Web pages: dashboards, alerts, chats, visualizers | No | Yes |
+| Live data: Google Sheets, CSV and JSON feeds | No | Yes |
+| Image and logo overlays, text, clocks and countdowns | No | Yes |
+| Multi-layer frames and transitions (cut, fade, slide, wipe, dip) | No | Yes |
+| Fallback slate when a live input drops | No | Yes |
+| Edit together in real time | No | Yes |
+| Switch frames on a schedule you set | No | Yes |
+| AI assistant that builds and runs the show | No | Yes |
+
+Both stream 24/7 from the cloud, manage your YouTube channel, run on start and stop schedules, and
+can use a backup stream. Webcam guests are coming soon.
+
+## Scenes and frames
+
+A scene is what you build and publish. It holds one or more **frames**, such as "Starting soon",
+"Interview" and "Be right back". One frame is on air at a time. You cut between them from the
+**Live** panel, or the show's script does it for you on a schedule or when data changes.
+
+## The words you'll meet
+
+- **Scene**: what you build in the studio and publish. A scene loop plays it.
+- **Show**: everything one scene plays, with all its frames, sources and data.
+- **Frame**: one arrangement of layers. One frame is on air at a time.
+- **Layer**: one thing in a frame, such as a video, text, an image or a shape.
+- **Source**: anything with picture or sound: a file, a playlist, a web page or a live input. Each
+  source shows as live or down.
+- **Table**: rows of data from a sheet, a file or a feed, which layers can show.
+- **Control**: a switch or value you set while the show runs, like a "Breaking news" toggle.
+- **Transition**: how one frame gives way to the next.
+- **Publish**: makes your edits the live version. Until you publish, edits are a draft nobody sees
+  on air.
+
+## Create a scene loop
+
+<Steps>
+  <Step title="Start a new loop">
+    On the **Loops** page, click **New loop**, enter a **Loop name**, and pick the **Resolution** and
+    **Framerate**.
+  </Step>
+  <Step title="Choose scene">
+    Click **Choose scene**. If you pick 1440p or 4K, the scene streams at 1080p, the scene maximum.
+  </Step>
+  <Step title="Build it in the studio">
+    The studio opens on your new show. See [Build a scene](/scenes/build-a-scene).
+  </Step>
+</Steps>
+
+To turn an existing loop into a scene loop, stop it, open its **Scene** tab, and click **Design a
+scene**. To go back to a video loop, stop the loop and choose **Remove scene**.
+
+## Pricing
+
+A scene loop pays the normal streaming rate plus a scene rendering charge. During the beta, scene
+rendering costs 30% less than the launch price. At the default beta price, a 1080p 30fps scene loop
+costs **\$20 for 30 days**. See [Billing](/billing#scenes).
+
+## Next steps
+
+<Columns cols={2}>
+  <Card title="Build a scene" icon="pencil-ruler" href="/scenes/build-a-scene">
+    Lay out your show, publish it and go live.
+  </Card>
+  <Card title="Live inputs" icon="radio-tower" href="/scenes/live-inputs">
+    Bring in OBS, vMix or a hardware encoder over RTMP or SRT.
+  </Card>
+  <Card title="AI assistant" icon="sparkles" href="/scenes/ai-assistant">
+    Describe the show and let the assistant build it.
+  </Card>
+  <Card title="Run the show" icon="sliders-horizontal" href="/scenes/show-control">
+    Switch frames, set controls and update data while you're live.
+  </Card>
+</Columns>

@@ -38,10 +38,14 @@ Connecting a destination means trusting us with sensitive keys, so we protect th
 - Your **YouTube authorization** and **RTMP stream keys** are **encrypted at rest**.
 - They're kept in **isolated storage**, separate from the rest of your account data.
 - They're used only to publish your stream to the destination you picked — never shared.
+- In [scenes](/scenes/overview), camera passwords and the keys your tables use are encrypted and
+  never shown again. Live input stream keys are shown once, when you create them.
 
 See [YouTube integration](/platform/youtube) for how the YouTube connection works.
 
-## If something looks off
+## Troubleshooting
+
+### Your stream stopped or isn't showing
 
 <Steps>
   <Step title="Check your destination">
@@ -57,6 +61,36 @@ See [YouTube integration](/platform/youtube) for how the YouTube connection work
     restart the stream.
   </Step>
 </Steps>
+
+### One of several destinations is down
+
+On a [multistream](/platform/multistream) loop, each destination has its own status, and one failing
+destination never takes the others off the air.
+
+- **Not connecting** or **Retrying later**: Streamloop keeps trying on its own. Check that the
+  platform still accepts your stream.
+- **Off after error**: the platform refused the stream for good, often because of a changed stream
+  key. The row says what to fix. Update the destination, and turn it back on after the loop stops.
+- **Off**: you turned it off, or stopped sending to it.
+
+### A repeating loop didn't start
+
+If a run of a [repeating schedule](/build-and-schedule-your-playlist#repeat-a-schedule) can't start,
+the loop shows **Repeat is paused until this is fixed**. Fix the problem shown (often credits or a
+destination that needs reconnecting), then click **Schedule again**.
+
+### A scene shows a slate or a blank layer
+
+In a [scene](/scenes/overview), a live input or camera that stops sending switches to its fallback,
+such as a "Stream starting soon" slate. The stream itself stays live. Check the source's status in
+the studio's **Live** panel:
+
+- **Waiting** or **Down**: no feed is arriving. Check your encoder or camera, and that it uses the
+  current stream key.
+- **Key revoked**: the key was replaced. Paste the new key into your encoder.
+- **Can't start**: a setting is missing. Open the source to see which.
+
+See [Live inputs](/scenes/live-inputs) and [Cameras](/scenes/cameras).
 
 <Note>
   Building an always-on channel? Start on [streamloop.app](https://streamloop.app), or follow the

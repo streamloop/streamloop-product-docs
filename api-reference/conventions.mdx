@@ -1,53 +1,79 @@
 ---
 title: "Conventions"
-description: "Versioning, request and response formats, cursor pagination, and the RFC 7807 error model used across every Streamloop endpoint."
+description: "Versioning, workspaces, cursor pagination, idempotent retries, rate limits and the RFC 7807 error model shared by the Streamloop REST API and Scenes API."
 icon: "ruler"
-keywords: ["api versioning", "cursor pagination", "rfc 7807", "problem details", "api errors", "rest conventions"]
+keywords: ["api versioning", "cursor pagination", "rfc 7807", "problem details", "api errors", "idempotency key", "rate limit headers", "x-workspace-id"]
 ---
 
-These rules hold across every REST endpoint, so once you've learned them you can read the rest of the reference quickly.
+These rules hold across the REST API and the [Scenes API](/api-reference/scenes). Once you know them, you can read the rest of the reference quickly.
 
 ## Base URL and versioning
 
-All REST requests go to a versioned base path:
+All requests go to a versioned base path:
 
 ```
 https://api.streamloop.app/v1
 ```
 
-The version (`v1`) is in the path. We add fields and endpoints without bumping the version; a breaking change would ship under a new version path so your integration keeps working.
+The version (`v1`) is in the path. We add fields and endpoints without changing the version. A breaking change would ship under a new version path, so your integration keeps working.
+
+### Deprecation and sunset
+
+Nothing in `v1` is retiring today. When something does, this is how you hear about it, at least 90 days before it stops:
+
+- **REST:** every answer of a retiring route carries `Deprecation: @<unix seconds>` (when it was marked, [RFC 9745](https://www.rfc-editor.org/rfc/rfc9745)), `Sunset: <HTTP date>` (when it stops, [RFC 8594](https://www.rfc-editor.org/rfc/rfc8594)) and `Link: <this section>; rel="deprecation"`, and the route is marked `deprecated` in [`/v1/openapi.json`](https://api.streamloop.app/v1/openapi.json) with what replaces it in its description.
+- **GraphQL:** a retiring field or argument is marked `@deprecated(reason: "…")` in the schema, with what replaces it; introspection shows it.
+- **This page** lists what is retiring and when.
+
+A retired route answers `410` with code `GONE` after its sunset date. A whole version (`/v1`) would get the same notice, a year rather than 90 days.
 
 ## Requests and responses
 
-Requests and responses are JSON (`Content-Type: application/json`). Send a JSON body on `POST`, `PATCH`, and `PUT`; send query parameters on `GET`.
+Requests and responses are JSON (`Content-Type: application/json`). Send a JSON body on `POST`, `PATCH` and `PUT`, and query parameters on `GET`. The Scenes API also takes code as the body (`text/jsx`, `text/tsx`, `text/typescript`) and answers pictures as `image/png`.
 
-A single-resource response returns that resource directly:
+A single-resource response returns the resource itself:
 
 ```json
 {
   "id": "stream_01J…",
   "name": "Lofi radio",
-  "status": "live",
-  "quality": "1080p",
-  "framerate": 30
+  "state": "active",
+  "quality": "q_1080p",
+  "framerate": "f_30"
 }
 ```
 
+## Workspaces
+
+Everything you create belongs to a [workspace](/workspaces-and-team). Name the workspace in the `X-Workspace-Id` header:
+
+```bash
+curl https://api.streamloop.app/v1/streams \
+  -H "X-API-Key: $SL_KEY" \
+  -H "X-Workspace-Id: wksp_…"
+```
+
+- **With an API key, the header is required.** A key carries no workspace, so a request without it answers `400 WORKSPACE_REQUIRED`.
+- **With an OAuth token** it defaults to the workspace the token was issued for.
+- If you aren't a current member of the workspace, the answer is `403 WORKSPACE_FORBIDDEN`. It never falls back to another workspace.
+
+`GET /v1/workspaces` lists your workspaces, with your role in each. It's the one route that doesn't need the header.
+
 ## Pagination
 
-List endpoints are **cursor-paginated**. Pass `limit` to set the page size and `cursor` to fetch the next page:
+List endpoints are **cursor-paginated**. Pass `limit` to set the page size and `cursor` to get the next page:
 
 ```bash
 curl "https://api.streamloop.app/v1/streams?limit=20" \
-  -H "x-api-key: sl_your_key_here"
+  -H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS"
 ```
 
-The response wraps the items in `data` and returns paging metadata in `page`:
+The response has the items in `data` and paging details in `page`:
 
 ```json
 {
   "data": [
-    { "id": "stream_01J…", "name": "Lofi radio", "status": "live" }
+    { "id": "stream_01J…", "name": "Lofi radio", "state": "active" }
   ],
   "page": {
     "hasMore": true,
@@ -56,41 +82,103 @@ The response wraps the items in `data` and returns paging metadata in `page`:
 }
 ```
 
-To get the next page, send the `nextCursor` value back as the `cursor` parameter. When `hasMore` is `false`, `nextCursor` is `null` and you've reached the end.
+Send `nextCursor` back as `cursor` for the next page. When `hasMore` is `false`, `nextCursor` is `null` and you've reached the end.
+
+## Idempotent retries
+
+Send an `Idempotency-Key` header (any unique string, for example a UUID) on `POST` and `PATCH` requests. If you repeat a request with the same key within 24 hours, you get the original response again, with `Idempotency-Replayed: true`, and nothing runs twice. Server errors (`5xx`) aren't stored, so a retry after one runs again.
+
+A key belongs to one request. If you reuse a key with a different body, the API refuses it with `422 IDEMPOTENCY_KEY_REUSED` and doesn't run the request. Use a new key for each new request, and the same key only to retry.
 
 ```bash
-curl "https://api.streamloop.app/v1/streams?limit=20&cursor=eyJpZCI6…" \
-  -H "x-api-key: sl_your_key_here"
+curl -X POST https://api.streamloop.app/v1/streams \
+  -H "X-API-Key: $SL_KEY" -H "X-Workspace-Id: $SL_WS" \
+  -H "Idempotency-Key: 6f1c2e9a-…" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "Lofi radio" }'
 ```
+
+## Rate limits
+
+Each caller can make **600 requests a minute**. Every response carries the current state:
+
+| Header | Meaning |
+| --- | --- |
+| `RateLimit-Limit` | Requests allowed per window |
+| `RateLimit-Remaining` | Requests left in this window |
+| `RateLimit-Reset` | Seconds until the window resets |
+| `RateLimit` | The same three as one field: `limit=600, remaining=599, reset=1` (the current [IETF draft](https://datatracker.ietf.org/doc/draft-ietf-httpapi-ratelimit-headers/)) |
+| `RateLimit-Policy` | The quota and its window: `600;w=60` |
+
+Over the limit, the answer is `429` with code `RATE_LIMITED` and a `Retry-After` header in seconds.
+
+The GraphQL endpoint draws on the same allowance for a call with an API key or a bearer token, with the same headers; its `429` is a GraphQL `errors` entry with `extensions.code` `RATE_LIMITED`.
+
+## Long-running requests
+
+A request whose work goes on after the answer returns `202 Accepted`: the body has the resource (its `id`), and the `Location` header is where to poll, `GET /v1/uploads/{id}` for an import from a link. When the answer is a list, `Location` is the first item's and the body has every id. Poll until the resource says it is done (`uploaded` true, or `externalSource.state.status` of `COMPLETED` or `FAILED`).
+
+## Concurrency
+
+Some edits take the version you read, so you never overwrite a newer change:
+
+- **Playlists:** pass `basedOnVersion` to `POST /playlists/{id}/operations`. If the playlist moved on, the batch is refused with `409 CONFLICT`.
+- **Scenes:** send the resource's `ETag` as `If-Match`. If it changed, the answer is `412 PRECONDITION_FAILED`. See [Scenes API](/api-reference/scenes#concurrency).
 
 ## Errors
 
-Successful requests return `2xx`. Errors return the matching HTTP status and an [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) problem document (`Content-Type: application/problem+json`):
+Successful requests return `2xx`. Errors return the matching HTTP status and an [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem document (the successor of RFC 7807, same shape) (`Content-Type: application/problem+json`):
 
 ```json
 {
-  "type": "https://streamloop.app/errors/stream-not-found",
-  "title": "Stream not found",
-  "status": 404,
-  "detail": "No stream with id stream_01J… exists for this account.",
-  "code": "stream_not_found"
+  "type": "about:blank",
+  "title": "Conflict",
+  "status": 409,
+  "detail": "Destination change refused",
+  "code": "STREAM_LIVE"
 }
 ```
 
 | Field | Description |
 | --- | --- |
-| `type` | URI reference identifying the problem type |
-| `title` | Short, human-readable summary of the problem |
+| `type` | A URI reference for the problem type (`about:blank`) |
+| `title` | A short summary of the HTTP status |
 | `status` | The HTTP status code |
-| `detail` | Explanation specific to this occurrence |
-| `code` | Stable, machine-readable error code — branch on this |
+| `detail` | What happened in this case |
+| `code` | A stable, machine-readable error code. Branch on this. |
 
-Branch your error handling on the `code` field (stable) rather than the human-readable `title` or `detail`.
+Some problems carry more fields, such as a `reason`, or `errors` and `currentRevision` in the Scenes API.
+
+### Codes and statuses
+
+| Status | Codes |
+| --- | --- |
+| `400` | `BAD_REQUEST` (a body or query that can't be parsed), `INVALID_BATCH`, `WORKSPACE_REQUIRED` |
+| `401` | `UNAUTHENTICATED` |
+| `402` | `INSUFFICIENT_CREDITS` |
+| `403` | `FORBIDDEN`, `INSUFFICIENT_SCOPE`, `WORKSPACE_FORBIDDEN`, `MULTISTREAM_NOT_ENABLED` |
+| `404` | `NOT_FOUND` (a resource, or a path no route has: the routes are in `/v1/openapi.json`) |
+| `405` | `METHOD_NOT_ALLOWED` (the `Allow` header lists the route's methods) |
+| `409` | `STREAM_LIVE`, `STREAM_ILLEGAL_TRANSITION`, `IMMUTABLE_WHILE_LIVE`, `NOT_LIVE`, `DESTINATION_LIMIT`, `YOUTUBE_DESTINATION_LIMIT`, `DESTINATION_DUPLICATE`, `LAST_DESTINATION`, `MIRROR_DESTINATION_CHANGE_BLOCKED`, `IN_USE`, `UPLOAD_INCOMPLETE`, `UPLOAD_ALREADY_COMPLETED`, `STALE_DRAFT`, `CONFLICT` |
+| `422` | `INVALID_INPUT` (a request that parses but doesn't fit: a missing or unknown field, a value of the wrong type), `STREAM_GUARD_FAILED`, `DESTINATION_INCOMPATIBLE`, `SCENE_MISSING`, `SCENE_NOT_PUBLISHED`, `SCENE_ASSET_MISSING`, `SCENE_PLAYLIST_MISSING`, `SCENE_PLAYLISTS_UNSUPPORTED`, `SCENE_QUALITY_UNSUPPORTED`, `UPLOAD_REMOVED`, `UNSUPPORTED_TYPE`, `FILE_TOO_LARGE`, `IDEMPOTENCY_KEY_REUSED` |
+| `410` | `GONE` (a route past its sunset date; see [Deprecation and sunset](#deprecation-and-sunset)) |
+| `429` | `RATE_LIMITED` |
+| `500` | `INTERNAL` |
+| `502` | `UPSTREAM_ERROR` (an unexpected failure) |
+| `503` | `UNAVAILABLE` (try again) |
+
+Both APIs use the same split: `400 BAD_REQUEST` only when the request can't be read at all (a body that isn't JSON), `422 INVALID_INPUT` for one that can be read but doesn't fit, with `detail` naming the field. An unknown query parameter is `422 INVALID_INPUT` too.
+
+A code not in this table follows its suffix: `…_NOT_FOUND` is `404`, `…_FORBIDDEN` is `403`, `…_UNAVAILABLE` is `503`, and anything else is `422`. The Scenes API has its own codes as well. See [Scenes API errors](/api-reference/scenes#errors).
 
 <Tip>
-  Treat `429` (too many requests) and `5xx` responses as retryable: back off and retry with jitter. Treat `4xx` responses other than `429` as permanent — fix the request rather than retrying it.
+  Treat `429` and `5xx` as retryable: back off, retry with jitter, and send the same `Idempotency-Key`. Treat other `4xx` responses as permanent. Fix the request instead of retrying it.
 </Tip>
+
+## Batches
+
+`POST /v1/batch` runs up to 20 REST operations in order, in one request. Results keep the input order. A failed operation doesn't stop the ones after it, and the batch isn't a transaction.
 
 ## Service status
 
-`GET /v1/status` is an unauthenticated health check, and `GET /v1/openapi.json` returns the full OpenAPI document that powers this reference.
+`GET /v1/status` is an unauthenticated health check. `GET /v1/openapi.json` returns the REST API's OpenAPI document, and `GET /v1/scenes/openapi.json` the Scenes API's.

@@ -1,74 +1,90 @@
 ---
 title: "Build and schedule your playlist"
 sidebarTitle: "Build & schedule"
-description: "Add videos to a loop, reorder them, play them in order or on shuffle, layer a separate audio track, schedule when the loop goes live, and edit the playlist while you're streaming."
+description: "Add videos to a loop, reorder them, play them in order, on shuffle or in a smart order, layer a separate audio track, schedule or repeat the loop, and edit the playlist while you're live."
 keywords:
-  ["live stream playlist", "loop multiple videos", "shuffle live stream", "edit playlist while live", "schedule live stream"]
+  ["live stream playlist", "loop multiple videos", "shuffle live stream", "edit playlist while live", "schedule live stream", "repeat live stream daily"]
 icon: "list-video"
 ---
 
-A loop plays a **playlist** — one video or many — to your destination on repeat. You can reorder
-the videos, shuffle them, add a separate audio track, schedule when the loop goes live, and even
+A video loop plays a **playlist** (one video or many) to your destinations on repeat. You can
+reorder the videos, shuffle them, add a separate audio track, schedule or repeat the loop, and
 change the playlist while you're streaming.
 
 ## Add your videos
 
 <Steps>
   <Step title="Open the Playlist tab">
-    In your loop, open the **Playlist** tab and select the **Video** tab.
+    In your loop, open the **Playlist** tab and select **Video**.
   </Step>
   <Step title="Add videos">
-    Click **Upload** to add files from your computer (MP4, MOV, or MKV, up to 10 GB each), or
-    **From URL** to import from Google Drive, a YouTube video, or a direct download link. You can
-    also drag files straight onto the list.
+    Pick one of these:
 
-    YouTube imports run end-to-end on Streamloop's servers and pull the **highest quality
-    available** for the video — a merged MP4 up to 4K (2160p), including AV1 sources. If a link
-    points at a YouTube playlist or a Google Drive folder, Streamloop imports the first item in
-    it; paste each item's own link to add more than one.
+    - **Upload** a file from your computer, or drag files onto the list. MP4, MOV and MKV work.
+      Each file can be up to **1.5 GB** on a free account or **5 GB** once you've paid. Split
+      longer videos into parts.
+    - **From URL** imports from Google Drive, a YouTube link or a direct download link. Streamloop
+      fetches the file on its servers, so you can close the tab while it works. A YouTube playlist
+      link lists its videos and you confirm which ones to import. For each video you choose a
+      quality, and for YouTube links you can import just a section.
+    - **From library** reuses a file you already uploaded, without uploading it again. See
+      [Library](/library).
   </Step>
   <Step title="Reorder them">
     Drag any video to change its position. The order you see is the order it plays.
   </Step>
 </Steps>
 
+<Note>
+  Uploads that aren't in any playlist are removed automatically after 14 days.
+</Note>
+
 ## Choose how it loops
 
-Under the playlist, the **Loop behavior** section controls the order each time the playlist
-repeats:
+The **Loop behavior** section sets the order each time the playlist repeats:
 
-- **In order** — play 1 → 2 → 3, then repeat.
-- **Shuffle** — random order, with no repeats until every video has played.
-- **Custom order** — describe the rule in plain language (a pre-roll that plays once,
-  time-of-day stings, weighted rotations) and Streamloop turns it into a sandboxed program that
-  picks the next item on every loop. See
-  [Custom playlist order](/custom-playlist-order).
+- **In order**: play 1 → 2 → 3, then repeat.
+- **Shuffle**: random order, with no repeats until every video has played.
+- **Smart order**: describe the order in plain words ("an intro first, then the rest", "the news at
+  the top of every hour") and an AI assistant builds it. See [Smart order](/smart-order).
 
 ## Add a separate audio track
 
-Switch to the **Audio** tab to add audio that plays *over* your video instead of its original
-sound — useful for music, radio, and lofi channels. Upload MP3, WAV, FLAC, or AAC; like videos,
-audio can be a single track or a whole playlist.
+Switch to **Audio** to add audio that plays *over* your video instead of its original sound. This
+suits music, radio and lofi channels. Audio can be one track or a whole playlist, with its own
+loop behavior.
 
 <Tip>
-  Building a music or lofi channel? See [Build a 24/7 music or lofi channel](/lofi-music-channel)
-  for the full recipe.
+  Building a music or lofi channel? See [Build a 24/7 music or lofi channel](/lofi-music-channel).
 </Tip>
 
 ## Schedule when it goes live
 
-In the loop's status panel you'll find the **Schedule** controls:
+The loop's status panel has the **Schedule** and **Expiration** controls:
 
-- **Schedule loop** — turn this on and enter a start time in plain language, like
-  `in 2h` or `tomorrow 9am`. The loop shows as **Scheduled** and goes live on its own. You can
-  **Start now** or **Cancel** at any time before it begins.
-- **Loop expiration** — set a run length or a specific end time so the stream stops automatically.
-- **Start on upload** — start the stream the moment your uploads finish, without scheduling.
+- **Schedule loop**: turn this on and type a start time in plain words, like `in 2h` or
+  `tomorrow 9am`, then click **Schedule the stream**. The loop shows **Scheduled to start** and goes
+  live on its own. Before then you can **Start now** or **Cancel schedule**.
+- **Loop expiration**: set a run length or an end time, and the stream stops on its own. A run
+  length (like 2 hours) starts counting when the stream goes live, not when you set it.
+- **Start when uploads finish**: the loop goes live as soon as your pending uploads are added.
 
-<Note>
-  Relative durations (like a 2-hour run length) start counting once the stream goes live, not when
-  you set them.
-</Note>
+### Repeat a schedule
+
+To run the same time window again and again, set **Recurrence** to **Daily** or **Weekly**:
+
+1. Pick **Daily**, or pick **Weekly** and then the days of the week.
+2. Enter a **From** and **To** time. Times use your local time zone.
+3. Click **Schedule**.
+
+The window must be shorter than 24 hours, and it can end after midnight. Each run is a normal start
+and stop. On a [managed YouTube connection](/platform/youtube), each run gets its own YouTube
+broadcast.
+
+While a repeating loop runs, **Stop for today** ends the current run and keeps the next one
+scheduled. **Cancel schedule** also turns repeat off. If a run can't start (for example, the
+destination needs reconnecting), the loop shows **Repeat is paused until this is fixed**. Fix the
+problem, then click **Schedule again**.
 
 ## Edit the playlist while you're live
 
@@ -76,17 +92,18 @@ You don't have to stop a running stream to change what's playing:
 
 <Steps>
   <Step title="Make your changes">
-    While the stream is live, add, remove, or reorder videos in the **Playlist** tab as usual.
-    Nothing changes on air yet — your edits are a draft.
+    While the stream is live, add, remove or reorder videos in the **Playlist** tab as usual.
+    Nothing changes on air yet. Your edits are a draft.
   </Step>
   <Step title="Publish">
-    Click **Publish**. Use **View changes** first to review what's pending. The on-air playlist
-    (shown as **Live (v1)**, **Live (v2)**, and so on) updates at the end of the current clip, so
-    the broadcast keeps running without a restart. If a publish fails, click **Retry**.
+    Click **View changes** to review what's pending, then **Publish playlist**. The on-air version
+    (shown as **Live (v1)**, **Live (v2)** and so on) updates without a restart. If a publish fails,
+    click **Retry publish**.
   </Step>
 </Steps>
 
 <Note>
-  Quality, frame rate, and destination changes still need a restart — only playlist changes go on
-  air live. Follow the [quickstart](/quickstart) to connect a destination and start the stream.
+  Resolution and frame rate changes need a restart. While a loop is live or scheduled, you can stop
+  sending to one of several destinations, but you can't add one. See
+  [Multistream](/platform/multistream).
 </Note>

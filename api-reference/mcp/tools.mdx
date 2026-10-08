@@ -1,76 +1,127 @@
 ---
 title: "MCP tools"
-description: "The 31 Streamloop MCP tools, grouped by domain — what each does and the scope it needs."
+description: "All 67 Streamloop MCP tools by area: what each one does, the OAuth scope it needs, and which ones are irreversible."
 icon: "wrench"
-keywords: ["mcp tools", "streamloop tools", "agent tools", "tool catalog"]
+keywords: ["mcp tools", "streamloop tools", "agent tools", "tool catalog", "scene tools", "multistream mcp"]
 ---
 
-The MCP server exposes **31 tools** across seven domains. They mirror the [REST API](/api-reference/introduction), so anything an agent can do here maps to a REST endpoint and vice versa. Names are `snake_case` and prefixed `streamloop_`.
+The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake_case`, with no prefix. Each tool's own description (what an agent reads) says when to use it and which tool comes next. This page lists them by area.
 
-Tools marked **Destructive** require explicit confirmation (`confirm: true`) before they run. See [Permissions](/api-reference/mcp/overview#permissions) for what each scope grants.
+- **Scope** is the OAuth scope the tool needs. `write` includes `read`, and `destructive` includes both.
+- **Destructive** matches each tool's `destructiveHint` annotation: the tool can't be undone or changes what viewers see. **Yes, confirm** tools are irreversible: they need `confirm: true`, or they answer `Error [CONFIRM_REQUIRED]`, say exactly what would go, and change nothing.
+- Every scene, stream, playlist and smart order tool publishes an `outputSchema`, and so do `list_destinations`, `list_uploads`, `get_upload` and `get_connection_hints`. Each is the shape the tool answers **or** an error's `{ code, detail, … }` (`anyOf`), so a client that validates results still gets each refusal as the tool's error. These 16 publish none (read their answer's JSON): `get_account`, `list_workspaces`, `get_selected_workspace`, `select_workspace`, `create_rtmp_destination`, `start_youtube_connection`, `list_youtube_channels`, `create_youtube_destination`, `update_destination`, `create_upload`, `complete_upload`, `discover_external_media`, `import_upload_from_url`, `delete_upload`, `get_billing_overview`, `get_streaming_usage`. Every error answers `structuredContent` `{ code, detail, … }`. See [Errors](/api-reference/mcp/overview#errors).
 
-## Account
+## Account and workspaces
 
-| Tool | Description | Scope |
-| --- | --- | --- |
-| `streamloop_get_me` | Get the authenticated user's account | `read` |
+| Tool | What it does | Scope | Destructive |
+| --- | --- | --- | --- |
+| `get_account` | Who the token belongs to: id, email, name, language and the default run length for new streams. | `read` | |
+| `list_workspaces` | Every workspace you belong to, your role in each, and which one is in use. | `read` | |
+| `get_selected_workspace` | Which workspace this connection works in, and why (selected, client header, or sign-in default). | `read` | |
+| `select_workspace` | Switches the workspace for every later call on this connection. Membership is checked on every request. | `read` | |
 
 ## Streams
 
-| Tool | Description | Scope |
-| --- | --- | --- |
-| `streamloop_list_streams` | List your streams | `read` |
-| `streamloop_get_stream` | Get one stream | `read` |
-| `streamloop_create_stream` | Create a 24/7 loop stream | `write` |
-| `streamloop_update_stream` | Update a stream (includes YouTube broadcast settings) | `write` |
-| `streamloop_start_stream` | Start a stream | `write` |
-| `streamloop_stop_stream` | Stop a stream | `write` |
-| `streamloop_schedule_stream` | Schedule a stream to start/stop automatically | `write` |
-| `streamloop_cancel_stream_schedule` | Cancel a scheduled start/stop | `write` |
-| `streamloop_check_stream_readiness` | Check whether a stream can go live | `read` |
-| `streamloop_get_stream_live_stats` | Read live stats for a running stream | `read` |
-| `streamloop_delete_stream` | Delete a stream · **Destructive** | `destructive` |
-
-## Uploads
-
-| Tool | Description | Scope |
-| --- | --- | --- |
-| `streamloop_list_uploads` | List uploaded media | `read` |
-| `streamloop_get_upload` | Get one upload | `read` |
-| `streamloop_create_upload_from_link` | Import media from a URL | `write` |
-| `streamloop_create_upload_from_file_upload` | Start a direct file upload | `write` |
-| `streamloop_complete_upload` | Finalize a direct upload | `write` |
-| `streamloop_delete_upload` | Delete an upload · **Destructive** | `destructive` |
-
-## Playlists
-
-| Tool | Description | Scope |
-| --- | --- | --- |
-| `streamloop_list_playlists` | List playlists | `read` |
-| `streamloop_get_playlist` | Get one playlist | `read` |
-| `streamloop_apply_playlist_operations` | Add, remove, and reorder playlist items | `write` |
-| `streamloop_copy_playlist` | Duplicate a playlist | `write` |
-| `streamloop_publish_playlist` | Publish playlist changes to a live stream | `write` |
+| Tool | What it does | Scope | Destructive |
+| --- | --- | --- | --- |
+| `list_streams` | Finds streams and their ids, with state and schedule. Filters by name and status. | `read` | |
+| `get_stream` | One stream's full configuration: state, quality, framerate, destinations and schedule. | `read` | |
+| `create_stream` | Creates a new stream, with an empty video playlist and an empty audio playlist. It starts once it has a destination plus either a video playlist with items or a published scene (`set_stream_scene`). | `write` | |
+| `update_stream` | Changes a stream's settings (name, quality, framerate, duration, storage, backup stream) and its YouTube broadcast settings. | `write` | |
+| `check_stream_readiness` | Says whether `start_stream` would work right now, and lists every blocking issue (not credits, and not whether an upload has finished processing). Changes nothing. | `read` | |
+| `start_stream` | Starts streaming now. Puts video in front of the public. Read `state` in its answer: `invalid` means refused, with `issues`; `preparing` means accepted. | `write` | |
+| `stop_stream` | Stops a live or starting stream. Nothing is deleted. Doesn't cancel a repeating schedule. | `write` | Yes |
+| `schedule_stream` | Sets the window a stream runs in, once, daily or weekly, and arms it. | `write` | |
+| `cancel_stream_schedule` | Disarms a schedule and clears any repeat. Doesn't stop a stream that's live. | `write` | |
+| `get_stream_live_stats` | How a live stream is doing on a connected YouTube channel: watch URL, status, viewers, views, likes. | `read` | |
+| `list_stream_destinations` | Where a stream publishes, whether each destination is enabled, and its delivery state while live. | `read` | |
+| `add_stream_destination` | Adds a destination to a stream. Up to 5, at most one YouTube channel; a second one needs [multistream](/platform/multistream) (rolling out). | `write` | |
+| `set_stream_destination_enabled` | Turns one destination off or back on without removing it. Turning off works while live, and takes that output off the air at once. | `write` | Yes |
+| `remove_stream_destination` | Takes a destination off a stream. Refused while live: turn it off instead. | `write` | |
+| `delete_stream` | Deletes a stream, its playlists and its schedule. Uploads stay. | `destructive` | Yes, confirm |
 
 ## Destinations
 
-| Tool | Description | Scope |
-| --- | --- | --- |
-| `streamloop_list_destinations` | List streaming destinations | `read` |
-| `streamloop_create_rtmp_destination` | Add a custom RTMP destination | `write` |
+| Tool | What it does | Scope | Destructive |
+| --- | --- | --- | --- |
+| `list_destinations` | The workspace's destinations (connected YouTube channels and custom RTMP), with ids and status. | `read` | |
+| `get_connection_hints` | How to connect a named platform: the methods, the exact ingest URL, and where to find the stream key. | `read` | |
+| `create_rtmp_destination` | Adds a destination from an RTMP URL and stream key (Twitch, Facebook, Kick, X, TikTok, YouTube by key, or any RTMP server). | `write` | |
+| `start_youtube_connection` | Starts connecting a Google account. Returns a consent link for you to open. | `write` | |
+| `list_youtube_channels` | The YouTube channels the workspace has Google consent for. | `read` | |
+| `create_youtube_destination` | Turns a connected YouTube channel into a destination, with managed broadcasts. | `write` | |
+| `update_destination` | Renames a destination, replaces a custom RTMP stream key, or archives and restores it. | `write` | |
 
-## Billing
+## Uploads
 
-| Tool | Description | Scope |
-| --- | --- | --- |
-| `streamloop_get_billing_overview` | Read credit balance and billing status | `billing` |
-| `streamloop_get_usage` | Read usage analytics | `billing` |
-| `streamloop_list_invoices` | List invoices | `billing` |
-| `streamloop_top_up_using_card_link` | Create a card top-up link · **Destructive** | `billing` |
+| Tool | What it does | Scope | Destructive |
+| --- | --- | --- | --- |
+| `list_uploads` | Finds media and their ids (`obj_…`). | `read` | |
+| `get_upload` | One file in detail: duration, resolution, framerate, audio and video, and import progress. | `read` | |
+| `create_upload` | Step 1 of uploading a local file: returns a link to `PUT` the bytes to. | `write` | |
+| `complete_upload` | Step 2: call it after the bytes are uploaded, to start processing. | `write` | |
+| `discover_external_media` | Looks at a media link and lists what can be imported, with quality options. | `read` | |
+| `import_upload_from_url` | Imports chosen media from a link (a page, a direct file link, or a file attached in the chat). | `write` | |
+| `delete_upload` | Deletes a file and everything made from it. Refused while a playlist or recent stream uses it. | `destructive` | Yes, confirm |
 
-## Crypto
+## Playlists
 
-| Tool | Description | Scope |
-| --- | --- | --- |
-| `streamloop_list_crypto_currencies` | List supported top-up cryptocurrencies | `billing` |
-| `streamloop_get_crypto_deposit_address` | Get a crypto deposit address for a top-up | `billing` |
+| Tool | What it does | Scope | Destructive |
+| --- | --- | --- | --- |
+| `list_playlists` | A stream's two playlists (video and audio), or a scene's playlists. | `read` | |
+| `get_playlist` | A playlist's items in play order, what a live stream plays now, and its version. | `read` | |
+| `apply_playlist_operations` | Adds, removes and reorders items, or switches between sequential and shuffle, as one all-or-nothing batch. | `write` | |
+| `copy_playlist` | Copies one playlist's contents into an empty playlist of the same kind. | `write` | |
+| `create_playlist` | Creates an empty playlist owned by a scene, for one of its playlist sources. | `write` | |
+| `swap_live_playlist` | Puts an edited playlist on the air while the stream is live, without going off air. | `write` | Yes |
+
+## Smart order
+
+[Smart order](/smart-order) playlists play in an order written from a plain-language description.
+
+| Tool | What it does | Scope | Destructive |
+| --- | --- | --- | --- |
+| `list_playlist_orders` | Finds saved orders and their ids. | `read` | |
+| `get_playlist_order` | One order, and whether it can run over a given playlist. | `read` | |
+| `create_playlist_order` | Writes and checks an order from a description. Doesn't apply it. | `write` | |
+| `refine_playlist_order` | Changes an order with a follow-up instruction, as a new version. | `write` | |
+| `assign_playlist_order` | Makes a playlist play in an order. A live stream picks it up for its next items. | `write` | Yes |
+| `unassign_playlist_order` | Returns a playlist to its own order. The saved order is kept. | `write` | |
+
+## Credits and usage
+
+| Tool | What it does | Scope | Destructive |
+| --- | --- | --- | --- |
+| `get_billing_overview` | Credit balance, burn rate and standing: how long streams can keep running. | `read` | |
+| `get_streaming_usage` | Minutes streamed, credits spent and sessions over a period, by quality. | `read` | |
+
+## Scenes
+
+<Info>
+  Scenes are in private beta. See [Scenes](/scenes/overview) to request access.
+</Info>
+
+The four `scene_*` tools read and change a scene's draft by path. See [Scenes](/api-reference/mcp/overview#scenes) on the overview for the paths, revisions and the publish flow.
+
+| Tool | What it does | Scope | Destructive |
+| --- | --- | --- | --- |
+| `list_scenes` | The workspace's scenes, newest first, with the version last published. | `read` | |
+| `create_scene` | Creates a scene with an empty draft. | `write` | |
+| `rename_scene` | Renames a scene. | `write` | |
+| `scene_get` | Reads anything in the draft by path, or a published version. `as: "image"` returns a picture of a frame or layer with any problems found. | `read` | |
+| `scene_set` | Creates or changes one thing in the draft: a whole value or exact text edits. Checked as the studio checks it. Changing what exists needs the `revision` you read (`"*"` on purpose), or it answers `REVISION_REQUIRED`. | `write` | |
+| `scene_remove` | Deletes whole things from the draft, all or nothing. Each path needs the revision you read (`"*"` on purpose). | `write` | Yes |
+| `scene_probe` | Fetches a URL once to show what a table would read from it. Changes nothing. | `read` | |
+| `publish_scene` | Publishes the draft as it was at `draftRevision` (required) as the next version. `dryRun` only checks; on air it needs `confirm: true`; `STALE_PUBLISH` when someone published since your draft's base. | `write` | Yes |
+| `list_scene_versions` | Published versions, newest first: number, when, by whom. | `read` | |
+| `revert_scene` | Publishes an earlier version again as the next version. Needs `expectedVersion` (the latest published version you saw); on air it needs `confirm: true`. | `write` | Yes |
+| `discard_scene_draft` | Puts the draft back to the published version. Every change since is lost. Needs the `draftRevision` you reviewed; `dryRun` lists what would be lost first. | `destructive` | Yes |
+| `delete_scene` | Deletes a scene and all its versions. Refused while a stream plays it. Without `confirm` it names the scene, its versions and the streams that play it. | `destructive` | Yes, confirm |
+| `set_stream_scene` | Makes a stopped stream play a scene's published version, or go back to its playlist. | `write` | |
+| `get_scene_state` | What each stream playing the scene has on air: the frame (`frame`), the next one (`next`), controls and sources. | `read` | |
+| `control_scene` | Acts on air: takes a frame to air with a transition (`goFrame`), cues the next (`next`), sets a control, replaces a table's rows, skips a track. Send an `actionId` (a new uuid per action) to retry safely after `SCENE_TIMEOUT`: the same `actionId` applies at most once. | `write` | Yes |
+| `list_scene_inputs` | The scene's ingest keys (never the key itself), secret names and IP cameras. | `read` | |
+| `create_scene_ingest_key` | Gets the RTMP, RTMPS and SRT addresses and key for an encoder such as OBS. The key is shown once. | `write` | |
+| `revoke_scene_ingest_key` | Revokes an ingest key. The encoder using it is cut off at once. | `destructive` | Yes, confirm |
+| `set_scene_secret` | Saves an API key that a table sends. It's sealed and never shown again. | `write` | |
+| `delete_scene_secret` | Deletes a secret. Tables that use it stop getting it. | `destructive` | Yes, confirm |
