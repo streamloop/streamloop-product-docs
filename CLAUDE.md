@@ -34,8 +34,13 @@ broadcast lifecycle on the user's behalf.
   playlist order, scheduled breaks rolling out).
 - **Reliability:** automatic stream monitoring and recovery; optional YouTube **Backup stream**.
 - **Pricing:** credits, pay-as-you-go **or an optional monthly plan** ($1 7-day trial), auto-refill.
-  Extra destinations, backup stream, extra storage and scene rendering are billed on top. Eligible
-  new accounts can claim free credits (amount set by a flag; don't quote one).
+  Extra destinations, backup stream, extra storage and scene rendering are billed on top. New
+  accounts get **no** free credits (the `free_credits` flag is at 0%); the $1 trial is the public
+  offer. Extra storage: first 30 GiB included, then $0.35/GiB-month while live (the rate comes
+  only from the `block_storage_backend` payload; code still says $0.50); standard storage launches
+  playlists up to 15 GiB.
+  Top-ups: $5–$1,000, card fee and bonus tiers from the live API (`paymentMethods`,
+  `topUpBonusTiers`). Re-check all of these before quoting them.
 
 ## Who you're writing for (audience)
 
