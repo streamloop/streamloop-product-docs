@@ -21,7 +21,7 @@
 | scene | — | The thing you build in the studio and publish (id `scn_…`). In the dashboard, "Scene" is also the loop type and the tab. Use "scene loop" for the type. |
 | frame | scene (for what's on air) | One arrangement of layers inside a scene; one is on air at a time, and the operator or the script cuts between them. Paths `frame/<id>`, JSX `<Frame>`, live op `goFrame`. The studio says **New frame**, **Blank frame**. |
 | destination | channel, output | Where a loop streams to (YouTube, Twitch, custom RTMP). |
-| multistream | restream, simulcast | Up to 5 destinations per loop. Rolling out. |
+| multistream | restream, simulcast | Up to 5 destinations per loop, at most one YouTube. Available to every workspace. |
 | Smart order | custom order, Order Program | The AI-built playlist order. |
 | workspace | team, organization, project | Members share loops, uploads, destinations and credits. |
 | credits | balance, tokens | \$1 = 1,000,000 credits. |

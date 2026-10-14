@@ -27,8 +27,8 @@ broadcast lifecycle on the user's behalf.
   **1080p60**; **private beta**, invite only via **Request early access**).
 - **Destinations:** YouTube (managed via OAuth, or RTMP key), plus RTMP platforms in the picker:
   Twitch, Facebook, Kick, X, TikTok, LinkedIn, **Custom RTMP**. **Multistream**: up to 5
-  destinations per loop, at most one YouTube; behind the `multistream` flag, so document it as
-  rolling out.
+  destinations per loop, at most one YouTube; the `multistream` flag has been at 100% since
+  2026-10-07, so document it as available to everyone (no "rolling out").
 - **Inputs:** MP4, MOV, MKV (1.5 GB per file free, 5 GB paid); MP3/WAV/FLAC/AAC audio; import from
   Google Drive, YouTube or a direct link; a workspace **Library**; **Smart order** (AI-built
   playlist order, scheduled breaks rolling out).

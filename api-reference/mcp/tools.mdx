@@ -35,7 +35,7 @@ The [MCP server](/api-reference/mcp/overview) has **67 tools**. Names are `snake
 | `cancel_stream_schedule` | Disarms a schedule and clears any repeat. Doesn't stop a stream that's live. | `write` | |
 | `get_stream_live_stats` | How a live stream is doing on a connected YouTube channel: watch URL, status, viewers, views, likes. | `read` | |
 | `list_stream_destinations` | Where a stream publishes, whether each destination is enabled, and its delivery state while live. | `read` | |
-| `add_stream_destination` | Adds a destination to a stream. Up to 5, at most one YouTube channel; a second one needs [multistream](/platform/multistream) (rolling out). | `write` | |
+| `add_stream_destination` | Adds a destination to a stream. Up to 5 ([multistream](/platform/multistream)), at most one YouTube channel. | `write` | |
 | `set_stream_destination_enabled` | Turns one destination off or back on without removing it. Turning off works while live, and takes that output off the air at once. | `write` | Yes |
 | `remove_stream_destination` | Takes a destination off a stream. Refused while live: turn it off instead. | `write` | |
 | `delete_stream` | Deletes a stream, its playlists and its schedule. Uploads stay. | `destructive` | Yes, confirm |
