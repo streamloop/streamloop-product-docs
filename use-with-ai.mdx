@@ -58,7 +58,7 @@ The server address is `https://mcp.streamloop.app/mcp`.
 
 ### Choose what the assistant may do
 
-When you sign in, you approve one or more permissions:
+Your assistant asks for a set of permissions when you connect it. The sign-in screen lists them, and you allow or deny them together:
 
 | Permission | The assistant can |
 | --- | --- |
@@ -66,7 +66,7 @@ When you sign in, you approve one or more permissions:
 | **Write** (`streamloop:write`) | Also create and change them, and start and stop loops. |
 | **Delete** (`streamloop:destructive`) | Also delete loops, uploads and scenes for good. |
 
-Give it only what it needs. Read-only is enough for questions like "how many credits do I have left?". The assistant can't buy credits or spend money: top-ups happen in the [dashboard](https://streamloop.app/loops).
+You can't pick some of them on that screen: **Allow** gives the assistant the whole list, and **Deny** gives it nothing. The assistant can't buy credits or spend money: top-ups happen in the [dashboard](https://streamloop.app/loops).
 
 You can see and revoke connected assistants any time in the **Connected Apps** panel. See [API tokens and connected apps](/account-access).
 
@@ -105,7 +105,7 @@ Other assistants get the same tools without the skills. They still work, because
 Some prompts to start with:
 
 - "Make a 24/7 lofi loop from these three videos and stream it to my YouTube channel."
-- "Add a second YouTube destination." (or "Also send it to Twitch")
+- "Also send it to my Twitch channel."
 - "Stream my loop every weekday from 9am to 5pm New York time."
 - "Why won't my stream start?"
 - "How many credits do I have, and how long will my loops keep running?"
@@ -117,7 +117,8 @@ Some prompts to start with:
 ## What to expect
 
 - **It asks before anything irreversible.** Deleting a loop, an upload or a scene, discarding a scene's draft, or revoking a stream key needs an explicit confirmation. The assistant should tell you what will happen and wait for your yes.
-- **It asks before changing what viewers see.** Starting a loop puts video in front of the public. Publishing a change to a scene that's on air needs a confirmation too, because viewers see it at once.
+- **It should check with you before starting a loop.** Starting a loop puts video in front of the public. Streamloop tells the assistant to ask you first unless you just asked for the start, but it doesn't block the start itself.
+- **It asks before changing a scene that's on air.** Publishing a change to a scene that's on air needs a confirmation, because viewers see it at once. Streamloop refuses the publish until the assistant confirms.
 - **Scene edits stay in the draft until you publish.** If you have the studio open on the scene, you see the assistant's edits live. Nothing goes on air until the assistant publishes, and it can do a dry run first that lists what would change.
 - **Some steps need you.** Connecting a YouTube account needs you to open a Google consent link. For a local file, the assistant may hand you an upload link if it can't upload the file itself.
 - **Some limits still apply.** A loop has at most 5 destinations ([multistream](/platform/multistream)) and at most one YouTube channel. You can't add or remove destinations while a loop is live, but you can turn one off.
