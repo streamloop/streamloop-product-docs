@@ -16,7 +16,7 @@
 | Streamloop | StreamLoop, Stream Loop | One word, capital S. |
 | loop | stream (in guides) | A loop is what the dashboard creates. The API calls it a *stream*; use "stream" only in the API reference, or for the broadcast itself ("your stream is live"). |
 | Pre-recorded video loop / video loop | — | The loop type that plays uploaded media. |
-| Scene loop | — | The loop type built in the studio. Scenes are available: access is granted within 24 hours of a request. Never call Scenes beta, private beta or invite only. |
+| Scene loop | — | The loop type built in the studio. Scenes are publicly available to every workspace: no access request, review or wait. Never call Scenes beta, private beta, early access or invite only, and never say access must be requested or granted. |
 | show | — | Everything a scene loop plays. |
 | scene | — | The thing you build in the studio and publish (id `scn_…`). In the dashboard, "Scene" is also the loop type and the tab. Use "scene loop" for the type. |
 | frame | scene (for what's on air) | One arrangement of layers inside a scene; one is on air at a time, and the operator or the script cuts between them. Paths `frame/<id>`, JSX `<Frame>`, live op `goFrame`. The studio says **New frame**, **Blank frame**. |
@@ -34,7 +34,7 @@
 - Bold for UI elements, with the exact label from the dashboard's `en.po`: Click **New loop**
 - Code formatting for file names, commands, paths, URLs and keys
 - Explain streaming jargon (RTMP, stream key, bitrate) the first time a page uses it
-- Features behind a rollout flag are labelled "rolling out" or "beta", never presented as generally available
+- Features behind a rollout flag are labelled "rolling out" or "beta", never presented as generally available. Scenes are not behind a rollout flag: they are publicly available
 
 ## Content boundaries
 

@@ -24,7 +24,7 @@ broadcast lifecycle on the user's behalf.
 - **Core job:** loop an uploaded video/playlist → 24/7 live RTMP stream.
 - **Two loop types:** **Pre-recorded video** (up to **4K @ 60fps**, HDR) and **Scene** (a live
   show built in the studio: live inputs, web pages, data, overlays, AI assistant; max
-  **1080p60**; available, access granted within 24 hours of **Request early access**).
+  **1080p60**; publicly available to every workspace, no access request, review or wait).
 - **Destinations:** YouTube (managed via OAuth, or RTMP key), plus RTMP platforms in the picker:
   Twitch, Facebook, Kick, X, TikTok, LinkedIn, **Custom RTMP**. **Multistream**: up to 5
   destinations per loop, at most one YouTube; the `multistream` flag has been at 100% since
