@@ -1,7 +1,7 @@
 ---
 title: "Data and sheets"
 sidebarTitle: "Data and sheets"
-description: "Feed live data into a Streamloop scene from Google Sheets, Excel or CSV files, JSON feeds and web pages, and show it in text, scoreboards and lists that update on air."
+description: "Feed live data into a Streamloop scene from Google Sheets, Excel or CSV files, JSON feeds, web pages and MCP servers, and show it in text, scoreboards and lists that update on air."
 keywords:
   ["google sheets live stream overlay", "live data on stream", "json feed overlay", "scoreboard from spreadsheet", "dynamic stream graphics"]
 icon: "sheet"
@@ -22,6 +22,7 @@ show a table's values, and when the data changes, the stream updates on its own.
 | **Excel or CSV** | A spreadsheet file you upload. |
 | **JSON feed** | A URL that returns JSON, checked on a schedule. |
 | **Web page data** | Elements picked from a web page with a CSS selector, one row per match. |
+| **MCP server** | A tool on an MCP server, such as Stripe or Notion. Each refresh calls the tool, and its answer becomes the rows. |
 | **Formula** | A table computed in TypeScript from other tables and controls. It recomputes when they change. |
 
 ## Connect a Google Sheet
@@ -56,6 +57,30 @@ URL and a CSS selector: each element it matches becomes a row. Both must be publ
 
 If the feed needs a key, add it under **Headers** (for example `Authorization: Bearer …`) or in the
 URL.
+
+## Use an MCP server
+
+An MCP server is a service that AI assistants can call. Many apps have one, and a scene can read
+from it like a feed.
+
+<Steps>
+  <Step title="Add the table">
+    In **Sources & layers**, click **Add source** and pick **MCP server**. Paste the **Server URL**.
+  </Step>
+  <Step title="Sign in">
+    If the server needs a sign-in, click **Connect** next to **Sign-in**. A window opens where you
+    sign in to the server. If the server takes an API key instead, add it under **Headers**.
+  </Step>
+  <Step title="Choose the tool">
+    Pick a **Tool** from the server's list. If the tool needs input, type it under **Arguments**.
+    Use **Pick** to choose the part of the answer that holds the rows, and **Refresh** for how
+    often to call the tool.
+  </Step>
+</Steps>
+
+A table only reads. Streamloop refuses a tool that changes something, such as one that sends,
+updates or deletes, as a table. The sign-in and any key are saved as secrets of the scene, like
+the keys below.
 
 ## Keep keys secret
 
