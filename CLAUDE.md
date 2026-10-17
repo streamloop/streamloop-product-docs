@@ -24,7 +24,7 @@ broadcast lifecycle on the user's behalf.
 - **Core job:** loop an uploaded video/playlist → 24/7 live RTMP stream.
 - **Two loop types:** **Pre-recorded video** (up to **4K @ 60fps**, HDR) and **Scene** (a live
   show built in the studio: live inputs, web pages, data, overlays, AI assistant; max
-  **1080p60**; **private beta**, invite only via **Request early access**).
+  **1080p60**; available, access granted within 24 hours of **Request early access**).
 - **Destinations:** YouTube (managed via OAuth, or RTMP key), plus RTMP platforms in the picker:
   Twitch, Facebook, Kick, X, TikTok, LinkedIn, **Custom RTMP**. **Multistream**: up to 5
   destinations per loop, at most one YouTube; the `multistream` flag has been at 100% since
@@ -61,7 +61,7 @@ reader has a video file and a destination account, and little else. Explain stre
 This is the public docs site, built on **Mintlify**. Every page describes the real product;
 keep it that way. Two tabs:
 
-- **Guides** — groups: Getting started · Video loops · Scenes (beta) · Destinations ·
+- **Guides** — groups: Getting started · Video loops · Scenes · Destinations ·
   Account & team. `use-with-ai.mdx` covers connecting assistants to the MCP server and the
   Claude Code plugin (`streamloop/live-scene`, `plugin/streamloop`).
 - **API reference** — hand-written pages under `api-reference/` plus two generated groups: the
@@ -164,7 +164,7 @@ a `{/* TODO: verify */}` rather than guessing.
    ```
    `title` + `description` are also the SEO/OG tags Mintlify emits — write them deliberately.
 3. **Register it in `docs.json`.** Add the page path to the right `navigation.groups` entry
-   (Getting started / Video loops / Scenes (beta) / Destinations / Account & team).
+   (Getting started / Video loops / Scenes / Destinations / Account & team).
 4. **Draft with Mintlify components, not raw HTML.** Use `<Steps>` for procedures, `<Card>`/
    `<Columns>` for landing/index pages, `<Tabs>` for per-platform variants, `<Accordion>` for
    FAQs, `<Note>/<Warning>/<Info>/<Tip>` for callouts, `<Frame>` for screenshots. Ask the
