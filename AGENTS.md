@@ -34,7 +34,7 @@
 - Bold for UI elements, with the exact label from the dashboard's `en.po`: Click **New loop**
 - Code formatting for file names, commands, paths, URLs and keys
 - Explain streaming jargon (RTMP, stream key, bitrate) the first time a page uses it
-- Features behind a rollout flag are labelled "rolling out" or "beta", never presented as generally available
+- Features behind a rollout flag are labelled "rolling out" or "beta", never presented as generally available. Scenes are not behind a rollout flag: they are publicly available
 
 ## Content boundaries
 
