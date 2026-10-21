@@ -1,9 +1,9 @@
 ---
-title: "MCP server"
+title: "MCP server: connection and auth reference"
 sidebarTitle: "Overview"
-description: "Let AI agents like Claude, ChatGPT and Cursor run Streamloop as tools: set up 24/7 loops, multistream to several platforms and build live scenes over the Model Context Protocol."
+description: "Streamloop MCP server reference: endpoint, Streamable HTTP transport, OAuth 2.1 sign-in and scopes, workspace selection, confirmation rules and error codes."
 icon: "bot"
-keywords: ["streamloop mcp", "model context protocol", "mcp server", "ai agent streaming", "claude mcp", "chatgpt mcp", "scene mcp"]
+keywords: ["streamloop mcp", "streamloop mcp server setup", "mcp endpoint", "mcp oauth", "mcp scopes", "streamable http", "mcp error codes"]
 ---
 
 Streamloop runs a hosted **Model Context Protocol (MCP)** server. An AI agent connected to it can do what you do in the dashboard: upload media, fill playlists, connect destinations, start and schedule 24/7 streams, and build and run scenes. It signs in with OAuth as you, so it sees only the workspaces you belong to.
@@ -17,7 +17,7 @@ For a step-by-step setup in Claude, ChatGPT, Cursor or Claude Code, see [Use Str
 | URL | `https://mcp.streamloop.app/mcp` |
 | Transport | Streamable HTTP |
 | Auth | OAuth 2.1 (authorization code with PKCE, S256) |
-| Tools | 67 — see [Tools](/api-reference/mcp/tools) |
+| Tools | 67, listed in [Tools](/api-reference/mcp/tools) |
 
 ## Registry listings
 
