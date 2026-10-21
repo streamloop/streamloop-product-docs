@@ -20,6 +20,8 @@ side.
 - **The camera must be reachable from the internet**: a public IP address, or a port forward on your
   router (RTSP usually uses port 554). Cameras on a private or local network address are refused.
 - If your camera can push RTMP itself, use an [RTMP input](/scenes/live-inputs) instead.
+- Set the camera's video to **H.264**. Most cameras have it in their video or encoding settings.
+  Scenes can't play H.265 (HEVC) from a camera.
 - You need the camera's RTSP address, for example `rtsp://203.0.113.7:554/stream1`, and its
   username and password if it has one. The camera's manual or app lists the address.
 
@@ -35,7 +37,8 @@ side.
   </Step>
   <Step title="Test the connection">
     Click **Test connection**. A working camera shows its resolution, frame rate and a snapshot, which
-    the canvas uses as its preview. Cameras that send H.265 video work, but show no snapshot.
+    the canvas uses as its preview. If the test shows no snapshot, the camera is probably sending
+    H.265 (HEVC), which scenes can't play: switch the camera's video to H.264 and test again.
   </Step>
   <Step title="Save and publish">
     Click **Save camera**, then [publish](/scenes/build-a-scene#publish) the scene.
@@ -52,6 +55,7 @@ side.
 | Auth | The username or password is wrong. |
 | Not found | The address is right but the stream path isn't. Check the camera's manual for its RTSP path. |
 | Unsupported | The camera sends a format Streamloop can't play. Try another stream profile on the camera. |
+| Works, but no snapshot | The camera sends H.265. Set its video to H.264, then test again. |
 
 ## Keep it working
 
