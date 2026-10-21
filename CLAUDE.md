@@ -29,7 +29,7 @@ broadcast lifecycle on the user's behalf.
   Twitch, Facebook, Kick, X, TikTok, LinkedIn, **Custom RTMP**. **Multistream**: up to 5
   destinations per loop, at most one YouTube; the `multistream` flag has been at 100% since
   2026-10-07, so document it as available to everyone (no "rolling out").
-- **Inputs:** MP4, MOV, MKV (1.5 GB per file free, 5 GB paid); MP3/WAV/FLAC/AAC audio; import from
+- **Inputs:** MP4, MOV, MKV (15 GB per file, the same for every workspace); MP3/WAV/FLAC/AAC audio; import from
   Google Drive, YouTube or a direct link; a workspace **Library**; **Smart order** (AI-built
   playlist order, scheduled breaks rolling out).
 - **Reliability:** automatic stream monitoring and recovery; optional YouTube **Backup stream**.
